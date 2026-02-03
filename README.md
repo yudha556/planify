@@ -85,3 +85,5 @@ Planify terbuka untuk kontribusi. Untuk menambahkan fitur baru atau memperbaiki 
 3. Commit perubahan: git commit -m "Tambah fitur baru"
 4. Push branch: git push origin fitur-baru
 5. Buat Pull Request
+
+![alt text](<ChatGPT Image 4 Feb 2026, 01.04.59.png>)

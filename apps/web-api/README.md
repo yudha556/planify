@@ -1,0 +1,1 @@
+Intinya udah berhasl

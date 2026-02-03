@@ -39,7 +39,7 @@ Planify adalah aplikasi berbasis AI yang membantu project manager, mahasiswa, at
 
 ---
 
-## 🚀 Instalasi & Jalankan
+## Instalasi & Jalankan
 
 ```bash
 # Clone repositori

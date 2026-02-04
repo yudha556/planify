@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planify API Tester</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: false, theme: 'dark' });</script>
     <style>
         * {
             box-sizing: border-box;
@@ -125,6 +127,38 @@
         .tabs button.active {
             background: #22c55e;
         }
+
+        /* Mode toggle buttons */
+        .mode-toggle {
+            display: inline-flex;
+            gap: 0.5rem;
+        }
+
+        .mode-toggle button {
+            width: auto;
+            background: #374151;
+            color: #9ca3af;
+            margin-bottom: 0;
+        }
+
+        .mode-toggle button.active {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .mode-toggle button:hover:not(.active) {
+            background: #4b5563;
+        }
+
+        /* Coin display */
+        .coin-display {
+            background: #fbbf24;
+            color: #1a1a2e;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 
@@ -172,10 +206,49 @@
             <button onclick="hideRevokedTest()">Dismiss</button>
         </div>
 
+        <!-- AI Testing Section (Visible when logged in) -->
+        <div id="ai-section" class="card hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>AI - Generate Project Brief</h2>
+                <span class="coin-display" id="coin-balance">10 Coins</span>
+            </div>
+            <input type="text" id="ai-project-name" placeholder="Project Name (required)">
+            <textarea id="ai-project-desc" placeholder="Project Description (required)"
+                style="width: 100%; padding: 0.75rem; margin-bottom: 0.75rem; border: none; border-radius: 4px; font-size: 1rem; background: #0f3460; color: #fff; min-height: 80px; resize: vertical;"></textarea>
+            <input type="text" id="ai-target" placeholder="Target Audience (optional)">
+            <input type="text" id="ai-features" placeholder="Key Features (comma-separated, optional)">
+            <input type="text" id="ai-tech" placeholder="Tech Stack (comma-separated, optional)">
+            <div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                <label style="color: #888; font-size: 0.85rem;">Mode:</label>
+                <div class="mode-toggle">
+                    <button id="btn-mode-draft" class="active" onclick="setMode('draft')">Draft (2 coins)</button>
+                    <button id="btn-mode-polished" onclick="setMode('polished')">Polished (4 coins)</button>
+                </div>
+            </div>
+
+            <div
+                style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; background: #16213e; padding: 0.5rem; border-radius: 4px;">
+                <input type="checkbox" id="include-diagram" style="width: auto; margin: 0;">
+                <label for="include-diagram" style="color: #4ade80; cursor: pointer;">Include Architecture Diagram (+2
+                    coins)</label>
+            </div>
+
+            <button class="secondary" onclick="generateBrief()" id="btn-generate">Generate Project Brief</button>
+            <p id="ai-status" style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;"></p>
+        </div>
+
+        <!-- Diagram Generation Section -->
+
+
         <!-- Result Display -->
         <div class="card">
-            <h2>Response</h2>
-            <div id="result" class="result">Belum ada request...</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Response</h2>
+                <button onclick="toggleRawJson()" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Toggle
+                    JSON</button>
+            </div>
+            <div id="formatted-result"></div>
+            <div id="result" class="result hidden">Belum ada request...</div>
         </div>
     </div>
 
@@ -273,6 +346,7 @@
             localStorage.removeItem('token');
             document.getElementById('auth-section').classList.remove('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('ai-section').classList.add('hidden');
             document.getElementById('revoked-test-section').classList.remove('hidden');
             showResult({ message: 'Logged out! Token di-blacklist.' });
         }
@@ -300,15 +374,278 @@
         function showDashboard(user) {
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('ai-section').classList.remove('hidden');
             if (user) {
                 document.getElementById('user-info').textContent = `Logged in as: ${user.email}`;
             } else {
                 document.getElementById('user-info').textContent = 'Token found in localStorage';
             }
+            fetchCoins();
         }
 
+        async function fetchCoins() {
+            try {
+                const res = await fetch(`${API_BASE}/ai/coins`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('coin-balance').textContent = `${data.coins} Coins`;
+                }
+            } catch (err) {
+                console.error('Failed to fetch coins', err);
+            }
+        }
+
+        function updateCoinDisplay(coins) {
+            document.getElementById('coin-balance').textContent = `${coins} Coins`;
+        }
+
+        let currentMode = 'draft';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-mode-draft').classList.toggle('active', mode === 'draft');
+            document.getElementById('btn-mode-polished').classList.toggle('active', mode === 'polished');
+        }
+
+        async function generateBrief() {
+            const projectName = document.getElementById('ai-project-name').value;
+            const projectDescription = document.getElementById('ai-project-desc').value;
+            const targetAudience = document.getElementById('ai-target').value;
+            const keyFeatures = document.getElementById('ai-features').value.split(',').map(s => s.trim()).filter(Boolean);
+            const techStack = document.getElementById('ai-tech').value.split(',').map(s => s.trim()).filter(Boolean);
+            const includeDiagram = document.getElementById('include-diagram').checked;
+
+            if (!projectName || !projectDescription) {
+                showResult({ error: 'projectName dan projectDescription wajib diisi!' });
+                return;
+            }
+
+            document.getElementById('btn-generate').disabled = true;
+            document.getElementById('ai-status').textContent = `Generating (${currentMode}${includeDiagram ? ' + Diagram' : ''})...`;
+
+            try {
+                const res = await fetch(`${API_BASE}/ai/project-brief`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        projectName,
+                        projectDescription,
+                        targetAudience,
+                        keyFeatures,
+                        techStack,
+                        mode: currentMode,
+                        includeDiagram
+                    })
+                });
+                const data = await res.json();
+                showResult(data);
+
+                if (data.coins !== undefined) {
+                    updateCoinDisplay(data.coins);
+                }
+
+                document.getElementById('ai-status').textContent = data.success
+                    ? `Done! Mode: ${currentMode} ${includeDiagram ? '+ Diagram' : ''} | Tokens: ${data.metadata?.tokensUsed || 'N/A'} | Time: ${data.metadata?.processingTime || 'N/A'}ms`
+                    : `Error: ${data.code || 'Unknown'}`;
+            } catch (err) {
+                showResult({ error: err.message });
+                document.getElementById('ai-status').textContent = 'Network error';
+            } finally {
+                document.getElementById('btn-generate').disabled = false;
+            }
+        }
+
+        let lastResponseData = null;
+
         function showResult(data) {
+            lastResponseData = data;
             document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+
+            // If it's a project brief response, render formatted output
+            if (data.success && data.data && data.data.title) {
+                renderProjectBrief(data.data, data.metadata);
+            } else {
+                // Show raw JSON for errors or other responses
+                document.getElementById('formatted-result').innerHTML = `
+                    <div style="padding: 1rem; background: ${data.success ? '#1a3a5c' : '#5c1a1a'}; border-radius: 8px;">
+                        <p style="color: ${data.success ? '#4ade80' : '#f87171'}; font-weight: bold;">
+                            ${data.success ? '✅ Success' : '❌ Error'}
+                        </p>
+                        <p style="color: #ccc;">${data.message || data.error || 'No message'}</p>
+                        ${data.code ? `<p style="color: #888; font-size: 0.85rem;">Code: ${data.code}</p>` : ''}
+                    </div>
+                `;
+            }
+        }
+
+        function toggleRawJson() {
+            const resultEl = document.getElementById('result');
+            resultEl.classList.toggle('hidden');
+        }
+
+        async function exportPdf() {
+            if (!lastResponseData || !lastResponseData.data) {
+                alert("Generate a project brief first!");
+                return;
+            }
+
+            const btn = document.getElementById('btn-export-pdf');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Generating PDF...';
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/pdf/brief`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(lastResponseData.data)
+                });
+
+                if (res.status === 402) {
+                    const err = await res.json();
+                    alert(err.message);
+                    return;
+                }
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${lastResponseData.data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_brief.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+
+                    // Update coins
+                    const coinsHeader = res.headers.get('X-Coins-Remaining');
+                    if (coinsHeader) updateCoinDisplay(coinsHeader);
+
+                    // Also try to fetch fresh coins to be sure
+                    fetchCoins();
+                } else {
+                    const errorText = await res.text();
+                    alert('Failed to generate PDF: ' + errorText);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error generating PDF');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Export PDF (1 coin)';
+                }
+            }
+        }
+
+        async function renderProjectBrief(brief, metadata) {
+            const html = `
+                <div style="background: #1a3a5c; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <h3 style="color: #4ade80; margin: 0 0 0.5rem 0;">${brief.title}</h3>
+                        <button id="btn-export-pdf" onclick="exportPdf()" style="padding: 0.25rem 0.5rem; background: #eab308; color: #1a1a2e; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Export PDF (1 coin)</button>
+                    </div>
+                    <p style="color: #ccc; line-height: 1.6;">${brief.overview}</p>
+                    ${metadata ? `<p style="color: #666; font-size: 0.75rem; margin-top: 0.5rem;">
+                        ${metadata.processingTime}ms | ${metadata.tokensUsed} tokens | Key #${metadata.keyIndex}
+                    </p>` : ''}
+                </div>
+                
+                ${brief.diagram ? `
+                <div style="background: #1a3a5c; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                    <h3 style="color: #4ade80; margin: 0 0 0.5rem 0;">Architecture Diagram</h3>
+                    <div id="diagram-container-brief" style="background: #fff; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+                        <div id="mermaid-output-brief">Rendering diagram...</div>
+                    </div>
+                    <p style="color: #ccc; margin-top: 0.5rem;">${brief.diagram.description}</p>
+                </div>
+                ` : ''}
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
+                        <h4 style="color: #60a5fa; margin: 0 0 0.5rem 0;">Objectives</h4>
+                        <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
+                            ${brief.objectives?.map(o => `<li>${o}</li>`).join('') || '<li>N/A</li>'}
+                        </ul>
+                    </div>
+                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
+                        <h4 style="color: #60a5fa; margin: 0 0 0.5rem 0;">Target Audience</h4>
+                        <p style="color: #ccc; margin: 0;">${brief.targetAudience || 'N/A'}</p>
+                    </div>
+                </div>
+
+                <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <h4 style="color: #60a5fa; margin: 0 0 0.75rem 0;">Key Features</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${brief.keyFeatures?.map(f => `
+                            <div style="background: #1a3a5c; padding: 0.75rem; border-radius: 4px;">
+                                <strong style="color: #4ade80;">${f.name}</strong>
+                                <p style="color: #aaa; margin: 0.25rem 0 0 0; font-size: 0.9rem;">${f.description}</p>
+                            </div>
+                        `).join('') || '<p style="color: #888;">N/A</p>'}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
+                        <h4 style="color: #f59e0b; margin: 0 0 0.5rem 0;">Constraints</h4>
+                        <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
+                            ${brief.constraints?.map(c => `<li>${c}</li>`).join('') || '<li>N/A</li>'}
+                        </ul>
+                    </div>
+                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
+                        <h4 style="color: #4ade80; margin: 0 0 0.5rem 0;">Success Criteria</h4>
+                        <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
+                            ${brief.successCriteria?.map(c => `<li>${c}</li>`).join('') || '<li>N/A</li>'}
+                        </ul>
+                    </div>
+                </div>
+
+                ${brief.recommendedTechStack?.length ? `
+                <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <h4 style="color: #a78bfa; margin: 0 0 0.75rem 0;">Recommended Tech Stack</h4>
+                    <div style="display: grid; gap: 0.5rem;">
+                        ${brief.recommendedTechStack.map(t => `
+                            <div style="background: #1a3a5c; padding: 0.75rem; border-radius: 4px; display: flex; gap: 1rem; align-items: flex-start;">
+                                <span style="background: #4c1d95; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #c4b5fd;">${t.category}</span>
+                                <div>
+                                    <strong style="color: #a78bfa;">${t.technology}</strong>
+                                    <p style="color: #aaa; margin: 0.25rem 0 0 0; font-size: 0.85rem;">${t.reason}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('formatted-result').innerHTML = html;
+
+            // Render mermaid if present
+            if (brief.diagram) {
+                setTimeout(async () => {
+                    const output = document.getElementById('mermaid-output-brief');
+                    try {
+                        // Reset if needed
+                        output.innerHTML = '';
+                        const { svg } = await mermaid.render('diagram-svg-brief', brief.diagram.diagram);
+                        output.innerHTML = svg;
+                    } catch (err) {
+                        console.error('Mermaid error:', err);
+                        output.innerHTML = `<pre style="color: #333; font-size: 0.85rem; overflow-x: auto;">${brief.diagram.diagram}</pre>
+                        <p style="color: red; font-size: 0.8rem;">Failed to render diagram</p>`;
+                    }
+                }, 100);
+            }
         }
     </script>
 </body>

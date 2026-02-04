@@ -215,6 +215,29 @@ Dokumentasi lengkap perubahan dan setup yang dilakukan untuk Web API Planify.
 
 ---
 
+### Phase 8: AI & Premium Features 🚧
+
+#### Files Created/Modified
+1. **src/services/ai/**
+   - Integrated Groq SDK for LLM
+   - Unified "Draft" vs "Polished" generation modes
+   - Mermaid diagram generation (AI-based DSL)
+
+2. **src/services/pdf/**
+   - PDF Service using Puppeteer
+   - Server-side Mermaid rendering for PDF
+   - Professional layout with page breaks
+
+3. **src/services/coin/**
+   - In-memory coin economy system
+   - Cost calculation logic (Draft=2, Polished=4, etc.)
+
+4. **src/controllers/ai.controller.ts**
+   - Endpoints for brief & diagram generation
+   - Integrated coin deduction logic
+
+---
+
 ## 🔢 Statistics
 
 ### Files Created

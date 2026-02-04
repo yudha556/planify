@@ -3,6 +3,8 @@ import cors from "cors";
 import path from "path";
 import healthRoute from "./routes/health.route";
 import authRoute from "./routes/auth.route";
+import aiRoute from "./routes/ai.route";
+import pdfRoute from "./routes/pdf.route";
 import { errorHandler } from "./middlewares/error.middleware";
 
 const app: Express = express();
@@ -26,6 +28,8 @@ app.get("/api", (_req, res) => {
 
 app.use("/api/health", healthRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/ai", aiRoute);
+app.use("/api/pdf", pdfRoute);
 
 // Error handler (must be last)
 app.use(errorHandler);

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planify API Tester</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        h1 {
+            color: #4ade80;
+            margin-bottom: 1rem;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input {
+            background: #0f3460;
+            color: #fff;
+        }
+
+        input::placeholder {
+            color: #888;
+        }
+
+        button {
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #22c55e;
+        }
+
+        button.secondary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        button.danger {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .result {
+            background: #0a0a1a;
+            padding: 1rem;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .status.success {
+            background: #166534;
+        }
+
+        .status.error {
+            background: #991b1b;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tabs button {
+            flex: 1;
+        }
+
+        .tabs button.active {
+            background: #22c55e;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Planify API Tester</h1>
+
+        <!-- Auth Section -->
+        <div id="auth-section" class="card">
+            <div class="tabs">
+                <button id="tab-login" class="active" onclick="switchTab('login')">Login</button>
+                <button id="tab-register" onclick="switchTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form">
+                <input type="email" id="login-email" placeholder="Email">
+                <input type="password" id="login-password" placeholder="Password">
+                <button onclick="login()">Login</button>
+            </div>
+
+            <!-- Register Form -->
+            <div id="register-form" class="hidden">
+                <input type="text" id="register-name" placeholder="Name (optional)">
+                <input type="email" id="register-email" placeholder="Email">
+                <input type="password" id="register-password" placeholder="Password">
+                <button onclick="register()">Register</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section (Hidden until logged in) -->
+        <div id="dashboard-section" class="card hidden">
+            <h2>Authenticated!</h2>
+            <div id="user-info" class="status success"></div>
+            <button class="secondary" onclick="testAuth()">Test GET /me</button>
+            <button class="danger" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Test Revoked Token Section (Hidden until logout) -->
+        <div id="revoked-test-section" class="card hidden">
+            <h2>Test Revoked Token</h2>
+            <p style="font-size: 0.9rem; margin-bottom: 0.75rem; color: #888;">Token terakhir udah di-blacklist. Klik
+                buat test apakah beneran ke-revoke.</p>
+            <button class="secondary" onclick="testRevokedToken()">Test Revoked Token</button>
+            <button onclick="hideRevokedTest()">Dismiss</button>
+        </div>
+
+        <!-- Result Display -->
+        <div class="card">
+            <h2>Response</h2>
+            <div id="result" class="result">Belum ada request...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let token = localStorage.getItem('token');
+        let lastToken = null; // Store last token for revoked test
+
+        // Check if already logged in
+        if (token) {
+            showDashboard();
+        }
+
+        function switchTab(tab) {
+            document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+            document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+            document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+        }
+
+        async function register() {
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+                showResult(data);
+
+                if (data.success) {
+                    alert('Register berhasil! Silakan login.');
+                    switchTab('login');
+                }
+            } catch (err) {
+                showResult({ error: err.message });
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                showResult(data);
+
+                if (data.success && data.data.token) {
+                    token = data.data.token;
+                    localStorage.setItem('token', token);
+                    showDashboard(data.data.user);
+                    // Hide revoked test section when logging in
+                    document.getElementById('revoked-test-section').classList.add('hidden');
+                }
+            } catch (err) {
+                showResult({ error: err.message });
+            }
+        }
+
+        async function testAuth() {
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                showResult(data);
+            } catch (err) {
+                showResult({ error: err.message });
+            }
+        }
+
+        async function logout() {
+            // Save token for revoked test
+            lastToken = token;
+
+            try {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch (err) {
+                console.error('Logout API failed', err);
+            }
+
+            token = null;
+            localStorage.removeItem('token');
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('revoked-test-section').classList.remove('hidden');
+            showResult({ message: 'Logged out! Token di-blacklist.' });
+        }
+
+        async function testRevokedToken() {
+            if (!lastToken) {
+                showResult({ error: 'Tidak ada token tersimpan. Login dulu lalu logout.' });
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${lastToken}` }
+                });
+                const data = await res.json();
+                showResult(data);
+            } catch (err) {
+                showResult({ error: err.message });
+            }
+        }
+
+        function hideRevokedTest() {
+            document.getElementById('revoked-test-section').classList.add('hidden');
+        }
+
+        function showDashboard(user) {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            if (user) {
+                document.getElementById('user-info').textContent = `Logged in as: ${user.email}`;
+            } else {
+                document.getElementById('user-info').textContent = 'Token found in localStorage';
+            }
+        }
+
+        function showResult(data) {
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+
+</html>

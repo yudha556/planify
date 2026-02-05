@@ -7,7 +7,8 @@
 
 // Supported task types for AI generation
 export type AITaskType =
-    | "generate_project_brief"
+    | "generate_project_brief_draft"
+    | "generate_project_brief_polished"
     | "generate_srs"
     | "generate_technical_overview"
     | "generate_architecture_diagram"
@@ -25,25 +26,96 @@ export interface ProjectBriefInput {
     techStack?: string[];
     mode?: GenerationMode; // draft = concise, polished = detailed
     includeDiagram?: boolean;
+    budget?: string;
+    timeline?: string;
 }
 
-// Output from project brief generation
+// Output from project brief generation (Full 10-Section PRD)
 export interface ProjectBriefOutput {
+    // === Section 1: Executive Summary ===
     title: string;
-    overview: string;
+    overview: string; // elevator pitch
+    targetAudience: {
+        primary: string;
+        secondary?: string;
+        admin?: string;
+    };
+    platformCategory: string; // web/mobile/desktop/API
+
+    // === Section 2: Problem Statement ===
+    problemStatement: {
+        painPoints: string[];
+        businessImpact: string; // cost of inaction
+    };
+
+    // === Section 3: Goals & Success Criteria ===
     objectives: string[];
-    targetAudience: string;
+    successCriteria: {
+        metric: string;
+        target: string;
+    }[];
+
+    // === Section 4: Features (MoSCoW) ===
     keyFeatures: {
         name: string;
         description: string;
+        priority: "Must" | "Should" | "Could" | "Won't";
+        userStory?: string;
+        acceptanceCriteria?: string[];
     }[];
-    constraints: string[];
-    successCriteria: string[];
+
+    // === Section 5: User Flow ===
+    userFlow?: {
+        steps: string[];
+        diagramDsl?: string; // Mermaid flowchart
+    };
+
+    // === Section 6: SRS (Software Requirements Specification) ===
+    srsModules?: {
+        moduleName: string;
+        requirements: {
+            id: string; // e.g. "REQ-AUTH-001"
+            userStory: string;
+            acceptanceCriteria: string[];
+        }[];
+    }[];
+
+    // === Section 7: Technical Architecture ===
     recommendedTechStack: {
         category: string;
         technology: string;
         reason: string;
     }[];
+    nonFunctionalRequirements?: {
+        security: string[];
+        performance: string[];
+        scalability: string[];
+        codeQuality?: string[];
+    };
+
+    // === Section 8: Scope & MVP ===
+    scope?: {
+        inScope: string[];
+        outOfScope: string[];
+        mvpFeatures: string[];
+    };
+
+    // === Section 9: Risks & Assumptions ===
+    risks?: {
+        risk: string;
+        type: "Technical" | "Business";
+        mitigation: string;
+    }[];
+    assumptions?: string[];
+
+    // === Section 10: AI Clarification Log ===
+    clarificationLog: {
+        date: string;
+        topic: string;
+        advice: string;
+    }[];
+
+    // === Architecture Diagram (Optional) ===
     diagram?: {
         diagram: string;
         description: string;

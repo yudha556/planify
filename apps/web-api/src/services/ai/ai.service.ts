@@ -15,26 +15,139 @@ import {
     DiagramOutput,
 } from "./types";
 
-// System prompts for different tasks
 const SYSTEM_PROMPTS: Record<AITaskType, string> = {
-    generate_project_brief: `You are a professional software project planner.
-Generate a project brief based on user input. Be concise and avoid over-explanation.
-Output MUST be valid JSON:
+    generate_project_brief_draft: `You are a professional software project planner.
+Generate a CONCISE Product Requirements Document (Draft Mode).
+Output MUST be valid JSON with ONLY these sections:
+
 {
   "title": "Project title",
-  "overview": "1-2 paragraph overview",
-  "objectives": ["objective 1", "objective 2"],
-  "targetAudience": "Who will use this",
-  "keyFeatures": [
-    { "name": "Feature name", "description": "Brief description" }
+  "overview": "Start immediately with 'A [platform type] designed for [audience] that enables [core value]'. No marketing fluff.",
+  "targetAudience": {
+    "primary": "Main user group",
+    "secondary": "Secondary users (optional)",
+    "admin": "Admin/operator users (optional)"
+  },
+  "platformCategory": "web/mobile/desktop/API",
+  
+  "problemStatement": {
+    "painPoints": ["List 3 key pain points (concise)"],
+    "businessImpact": "Brief bullet points (concise)"
+  },
+  
+  "objectives": ["Objective 1", "Objective 2"],
+  "successCriteria": [
+    { "metric": "KPI", "target": "Target" }
   ],
-  "constraints": ["constraint 1"],
-  "successCriteria": ["criteria 1"],
+  
+  "keyFeatures": [
+    {
+      "name": "Feature name",
+      "description": "Short description (1 sentence)",
+      "priority": "Must/Should"
+    }
+  ],
+  
   "recommendedTechStack": [
-    { "category": "Frontend/Backend/Database", "technology": "Tech name", "reason": "Brief reason" }
+    { "category": "Category", "technology": "Tech", "reason": "Brief reason (1 sentence)" }
+  ],
+  
+  "constraints": ["If user provided budget/timeline, use them. IF NOT provided, use '[To be determined]'"]
+}
+
+RULES:
+- Overview: Concise elevator pitch (1 paragraph).
+- Target Audience: Identify primary users.
+- Key Features: Max 5 core features. NO User Stories or AC.
+- Tech Stack: Max 3 main technologies.
+- NO OTHER SECTIONS ALLOWED. Optimize for minimum tokens.`,
+
+    generate_project_brief_polished: `You are a professional software project planner creating enterprise-grade PRDs.
+Generate a COMPLETE Product Requirements Document based on user input.
+
+Output MUST be valid JSON with ALL sections below:
+
+{
+  "title": "Project title",
+  "overview": "Start immediately with 'A [platform type] designed for [audience] that enables [core value]'. No marketing fluff.",
+  "targetAudience": {
+    "primary": "Main user group",
+    "secondary": "Secondary users (optional)",
+    "admin": "Admin/operator users (optional)"
+  },
+  "platformCategory": "web/mobile/desktop/API",
+  
+  "problemStatement": {
+    "painPoints": ["MUST include 3+ specific pain points with quantitative data (e.g., '15% loss', '5 hours/week') or concrete scenarios."],
+    "businessImpact": "Use bullet points. Focus on tangible loss (revenue, time, opportunity) if not solved."
+  },
+  
+  "objectives": ["Strategic objective 1", "Objective 2"],
+  "successCriteria": [
+    { "metric": "KPI name", "target": "Measurable target value" }
+  ],
+  
+  "keyFeatures": [
+    {
+      "name": "Feature name",
+      "description": "What it does",
+      "priority": "Must/Should/Could/Won't",
+      "userStory": "As a [role], I want [action] so that [benefit]",
+      "acceptanceCriteria": ["Specific testable criteria 1", "Criteria 2"]
+    }
+  ],
+  
+  "userFlow": {
+    "steps": ["Step 1: User does X", "Step 2: System responds Y"],
+    "diagramDsl": "graph TD\\n  A[Start] --> B[Action]"
+  },
+  
+  "srsModules": [
+    {
+      "moduleName": "Module name (e.g. Authentication)",
+      "requirements": [
+        {
+          "id": "REQ-XXX-001",
+          "userStory": "As a [role], I want...",
+          "acceptanceCriteria": ["AC with specific numbers/limits"]
+        }
+      ]
+    }
+  ],
+  
+  "recommendedTechStack": [
+    { "category": "Frontend/Backend/Database/etc", "technology": "Tech name", "reason": "Reasoning must be specific to THIS project's needs (e.g., 'chosen for real-time capabilities'). Max 2 sentences." }
+  ],
+  "nonFunctionalRequirements": {
+    "security": ["Specific security requirement with method"],
+    "performance": ["Response time < X ms", "Concurrent users: Y"],
+    "scalability": ["Horizontal/vertical scaling approach"],
+    "codeQuality": ["Test coverage %, linting rules"]
+  },
+  
+  "scope": {
+    "inScope": ["What IS included"],
+    "outOfScope": ["What is NOT included"],
+    "mvpFeatures": ["Minimum features for V1.0 launch"]
+  },
+  
+  "risks": [
+    { "risk": "Risk description", "type": "Technical/Business/Operational", "mitigation": "How to prevent/handle" }
+  ],
+  "assumptions": ["Pre-condition that must be true"],
+  
+  "clarificationLog": [
+    { "date": "YYYY-MM-DD", "topic": "Technical Decision / Question", "advice": "Brief reasoning/advice given by AI" }
   ]
 }
-Keep descriptions short but informative. Max 3-5 items per array.`,
+
+RULES:
+- Overview: Concise elevator pitch.
+- Key Features: EXTRACT ALL features mentioned in description + INFER implicit required features (e.g., Auth, Settings). Aim for 5-8 core features.
+- SRS Modules: Generate 4-5 core modules based on Key Features.
+- Tech Stack: Contextual reasoning, no generic pros/cons.
+- Risks: Include Technical, Business, and Operational risks.
+- Clarification Log: Simulate 2-3 key technical decisions or advice relevant to this project (e.g., 'Auth Strategy', 'Database Scaling'). Use current date.`,
 
     generate_srs: `You are a software requirements analyst.
 Generate a Software Requirements Specification based on input.
@@ -75,8 +188,8 @@ export const aiService = {
         const mode = input.mode || "draft";
 
         const modeInstruction = mode === "polished"
-            ? "Provide EXTREMELY detailed, professional, and comprehensive descriptions. Elaborate on every section. Key features must have deep technical explanations. Tech stack recommendations can include alternatives but must include trade-off analysis."
-            : "Keep it concise. Short descriptions only.";
+            ? "Provide EXTREMELY detailed, professional, and comprehensive descriptions. Ensure Pain Points have quantitative data. Infer implied features."
+            : "Keep it concise. Short descriptions only. STRICTLY FOLLOW the Draft Mode JSON schema.";
 
         const prompt = `
 Generate a project brief for:
@@ -84,15 +197,22 @@ Generate a project brief for:
 **Project Name:** ${input.projectName}
 **Description:** ${input.projectDescription}
 ${input.targetAudience ? `**Target Audience:** ${input.targetAudience}` : ""}
+${input.budget ? `**Budget:** ${input.budget}` : ""}
+${input.timeline ? `**Timeline:** ${input.timeline}` : ""}
 ${input.keyFeatures?.length ? `**Key Features:** ${input.keyFeatures.join(", ")}` : ""}
 ${input.techStack?.length ? `**Technology Stack:** ${input.techStack.join(", ")}` : ""}
 
 ${modeInstruction}
     `.trim();
 
+        // Select the appropriate system prompt based on mode
+        const systemPromptRef = mode === "polished"
+            ? SYSTEM_PROMPTS.generate_project_brief_polished
+            : SYSTEM_PROMPTS.generate_project_brief_draft;
+
         return groqProvider.generate<ProjectBriefOutput>(
             prompt,
-            SYSTEM_PROMPTS.generate_project_brief
+            systemPromptRef
         );
     },
 

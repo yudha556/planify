@@ -4,674 +4,900 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planify API Tester</title>
+    <title>Planify AI Studio</title>
+    <!-- Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({ startOnLoad: false, theme: 'dark' });</script>
+    <script>mermaid.initialize({ startOnLoad: false, theme: 'dark', fontFamily: 'Inter' });</script>
+
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(148, 163, 184, 0.1);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: system-ui, sans-serif;
-            background: #1a1a2e;
-            color: #eee;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
             min-height: 100vh;
-            padding: 2rem;
+            display: flex;
+            flex-direction: column;
         }
 
-        h1 {
-            color: #4ade80;
-            margin-bottom: 1rem;
+        /* --- Layout --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .container {
-            max-width: 500px;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
             margin: 0 auto;
+            width: 100%;
         }
 
+        /* --- Components --- */
         .card {
-            background: #16213e;
-            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 1.5rem;
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .scrollable {
+            overflow-y: auto;
+            max-height: calc(100vh - 8rem);
+            padding-right: 0.5rem;
+        }
+
+        .scrollable::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollable::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        h2,
+        h3 {
+            color: var(--text-main);
+            font-weight: 600;
             margin-bottom: 1rem;
         }
 
-        .card h2 {
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
+        label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
         }
 
         input,
+        textarea,
+        select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
         button {
             width: 100%;
             padding: 0.75rem;
-            margin-bottom: 0.75rem;
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        input {
-            background: #0f3460;
-            color: #fff;
-        }
-
-        input::placeholder {
-            color: #888;
-        }
-
-        button {
-            background: #4ade80;
-            color: #1a1a2e;
-            font-weight: bold;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
         }
 
         button:hover {
-            background: #22c55e;
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         button.secondary {
-            background: #3b82f6;
-            color: #fff;
+            background: #334155;
+        }
+
+        button.secondary:hover {
+            background: #475569;
         }
 
         button.danger {
-            background: #ef4444;
-            color: #fff;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
         }
 
-        .result {
-            background: #0a0a1a;
-            padding: 1rem;
+        button.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .coin-badge {
+            background: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* --- Toggle Switch --- */
+        .toggle-group {
+            display: flex;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.25rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-option {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .toggle-option.active {
+            background: #334155;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- Result Styling --- */
+        .result-box {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
             border-radius: 4px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            font-family: monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #334155;
+            color: white;
+        }
+
+        .tag.must {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .tag.should {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        .tag.tech {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        pre {
+            background: #0d1117;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: #e6edf3;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
-            max-height: 200px;
-            overflow-y: auto;
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
-        .status {
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
         }
 
-        .status.success {
-            background: #166534;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .status.error {
-            background: #991b1b;
-        }
-
-        .tabs {
+        /* Mermaid Overrides */
+        .mermaid {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            min-height: 100px;
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .tabs button {
-            flex: 1;
-        }
-
-        .tabs button.active {
-            background: #22c55e;
-        }
-
-        /* Mode toggle buttons */
-        .mode-toggle {
-            display: inline-flex;
-            gap: 0.5rem;
-        }
-
-        .mode-toggle button {
-            width: auto;
-            background: #374151;
-            color: #9ca3af;
-            margin-bottom: 0;
-        }
-
-        .mode-toggle button.active {
-            background: #3b82f6;
-            color: #fff;
-        }
-
-        .mode-toggle button:hover:not(.active) {
-            background: #4b5563;
-        }
-
-        /* Coin display */
-        .coin-display {
-            background: #fbbf24;
-            color: #1a1a2e;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.85rem;
+            justify-content: center;
         }
     </style>
 </head>
 
 <body>
+
+    <!-- NAV BAR -->
+    <nav class="navbar">
+        <div class="brand">
+            <i data-lucide="zap" fill="#3b82f6" stroke="none"></i> Planify AI Studio
+        </div>
+        <div class="user-menu fade-in hidden" id="nav-user-menu">
+            <div class="coin-badge" id="nav-coins">
+                <i data-lucide="coins" size="14"></i> <span id="coin-val">Loading...</span>
+            </div>
+            <div style="font-size: 0.875rem; color: var(--text-muted);" id="nav-email">user@example.com</div>
+            <button class="secondary" onclick="logout()"
+                style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.875rem;">
+                <i data-lucide="log-out" size="14"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
     <div class="container">
-        <h1>Planify API Tester</h1>
 
-        <!-- Auth Section -->
-        <div id="auth-section" class="card">
-            <div class="tabs">
-                <button id="tab-login" class="active" onclick="switchTab('login')">Login</button>
-                <button id="tab-register" onclick="switchTab('register')">Register</button>
-            </div>
+        <!-- LEFT PANEL: INPUTS -->
+        <div class="side-panel">
 
-            <!-- Login Form -->
-            <div id="login-form">
-                <input type="email" id="login-email" placeholder="Email">
-                <input type="password" id="login-password" placeholder="Password">
-                <button onclick="login()">Login</button>
-            </div>
+            <!-- Auth Card -->
+            <div id="auth-card" class="card fade-in">
+                <div class="toggle-group">
+                    <div class="toggle-option active" onclick="switchAuthMode('login')" id="tab-login">Login</div>
+                    <div class="toggle-option" onclick="switchAuthMode('register')" id="tab-register">Register</div>
+                </div>
 
-            <!-- Register Form -->
-            <div id="register-form" class="hidden">
-                <input type="text" id="register-name" placeholder="Name (optional)">
-                <input type="email" id="register-email" placeholder="Email">
-                <input type="password" id="register-password" placeholder="Password">
-                <button onclick="register()">Register</button>
-            </div>
-        </div>
+                <div id="form-login">
+                    <input type="email" id="login-email" placeholder="example@email.com">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button onclick="login()">
+                        <i data-lucide="log-in" size="18"></i> Login
+                    </button>
+                </div>
 
-        <!-- Dashboard Section (Hidden until logged in) -->
-        <div id="dashboard-section" class="card hidden">
-            <h2>Authenticated!</h2>
-            <div id="user-info" class="status success"></div>
-            <button class="secondary" onclick="testAuth()">Test GET /me</button>
-            <button class="danger" onclick="logout()">Logout</button>
-        </div>
-
-        <!-- Test Revoked Token Section (Hidden until logout) -->
-        <div id="revoked-test-section" class="card hidden">
-            <h2>Test Revoked Token</h2>
-            <p style="font-size: 0.9rem; margin-bottom: 0.75rem; color: #888;">Token terakhir udah di-blacklist. Klik
-                buat test apakah beneran ke-revoke.</p>
-            <button class="secondary" onclick="testRevokedToken()">Test Revoked Token</button>
-            <button onclick="hideRevokedTest()">Dismiss</button>
-        </div>
-
-        <!-- AI Testing Section (Visible when logged in) -->
-        <div id="ai-section" class="card hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2>AI - Generate Project Brief</h2>
-                <span class="coin-display" id="coin-balance">10 Coins</span>
-            </div>
-            <input type="text" id="ai-project-name" placeholder="Project Name (required)">
-            <textarea id="ai-project-desc" placeholder="Project Description (required)"
-                style="width: 100%; padding: 0.75rem; margin-bottom: 0.75rem; border: none; border-radius: 4px; font-size: 1rem; background: #0f3460; color: #fff; min-height: 80px; resize: vertical;"></textarea>
-            <input type="text" id="ai-target" placeholder="Target Audience (optional)">
-            <input type="text" id="ai-features" placeholder="Key Features (comma-separated, optional)">
-            <input type="text" id="ai-tech" placeholder="Tech Stack (comma-separated, optional)">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <input type="text" id="ai-budget" placeholder="Budget (e.g. $50k) - Optional">
-                <input type="text" id="ai-timeline" placeholder="Timeline (e.g. 3 months) - Optional">
-            </div>
-            <div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                <label style="color: #888; font-size: 0.85rem;">Mode:</label>
-                <div class="mode-toggle">
-                    <button id="btn-mode-draft" class="active" onclick="setMode('draft')">Draft (2 coins)</button>
-                    <button id="btn-mode-polished" onclick="setMode('polished')">Polished (4 coins)</button>
+                <div id="form-register" class="hidden">
+                    <input type="text" id="reg-name" placeholder="Full Name">
+                    <input type="email" id="reg-email" placeholder="example@email.com">
+                    <input type="password" id="reg-password" placeholder="Create Password">
+                    <button class="secondary" onclick="register()">
+                        <i data-lucide="user-plus" size="18"></i> Create Account
+                    </button>
                 </div>
             </div>
 
-            <div
-                style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; background: #16213e; padding: 0.5rem; border-radius: 4px;">
-                <input type="checkbox" id="include-diagram" style="width: auto; margin: 0;">
-                <label for="include-diagram" style="color: #4ade80; cursor: pointer;">Include Architecture Diagram (+2
-                    coins)</label>
+            <!-- Generator Card -->
+            <div id="generator-card" class="card hidden fade-in">
+                <h3><i data-lucide="sparkles" size="20"
+                        style="vertical-align: middle; margin-right: 0.5rem; color: var(--primary);"></i> New Project
+                </h3>
+
+                <label>Project Name</label>
+                <input type="text" id="p-name" placeholder="e.g. E-Commerce Dashboard">
+
+                <label>Description</label>
+                <textarea id="p-desc" rows="4"
+                    placeholder="Describe your idea... what does it do? who is it for?"></textarea>
+
+                <div class="toggle-group">
+                    <div class="toggle-option active" onclick="setMode('draft')" id="opt-draft">
+                        Draft <span style="font-size:0.7em; opacity:0.7;">(2c)</span>
+                    </div>
+                    <div class="toggle-option" onclick="setMode('polished')" id="opt-polished">
+                        Polished <span style="font-size:0.7em; opacity:0.7;">(4c)</span>
+                    </div>
+                </div>
+
+                <div
+                    style="background: rgba(16, 185, 129, 0.1); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="workflow" size="18" color="#10b981"></i>
+                        <span style="font-size: 0.9rem; color: #d1fae5;">Include Architecture Diagram</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 0.8rem; color: #10b981;">+2 coins</span>
+                        <input type="checkbox" id="inc-diagram" style="width: auto; margin: 0;">
+                    </div>
+                </div>
+
+                <details style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer;">
+                    <summary>Advanced Options</summary>
+                    <div style="margin-top: 1rem;">
+                        <input type="text" id="p-tech" placeholder="Tech Stack Preference (e.g. React, Node)">
+                        <input type="text" id="p-target" placeholder="Target Audience">
+                        <input type="text" id="p-features" placeholder="Specific Features (comma separated)">
+                    </div>
+                </details>
+
+                <button onclick="generate()">
+                    <i data-lucide="play" size="18"></i> Generate Brief
+                </button>
+                <p id="gen-status"
+                    style="margin-top: 0.8rem; font-size: 0.85rem; text-align: center; color: var(--text-muted); min-height: 1.2em;">
+                </p>
             </div>
 
-            <button class="secondary" onclick="generateBrief()" id="btn-generate">Generate Project Brief</button>
-            <p id="ai-status" style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;"></p>
         </div>
 
-        <!-- Diagram Generation Section -->
+        <!-- RIGHT PANEL: RESULTS -->
+        <div class="scrollable">
 
-
-        <!-- Result Display -->
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Response</h2>
-                <button onclick="toggleRawJson()" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Toggle
-                    JSON</button>
+            <div id="intro-placeholder" style="text-align: center; margin-top: 5rem; color: var(--text-muted);">
+                <i data-lucide="layout-template" size="48" style="opacity: 0.5; margin-bottom: 1rem;"></i>
+                <p>Generate a project brief to see results here.</p>
             </div>
-            <div id="formatted-result"></div>
-            <div id="result" class="result hidden">Belum ada request...</div>
+
+            <div id="result-container" class="hidden fade-in">
+
+                <div class="result-box">
+                    <div class="result-header">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <h2 id="res-title" style="margin: 0; color: var(--primary);">Project Title</h2>
+                            <span class="tag" id="res-mode">DRAFT</span>
+                        </div>
+                        <button class="secondary" style="width: auto; padding: 0.4rem 1rem;" onclick="downloadPdf()"
+                            id="btn-pdf">
+                            <i data-lucide="file-down" size="16"></i> Export PDF (1c)
+                        </button>
+                    </div>
+
+                    <p id="res-overview"
+                        style="line-height: 1.6; color: #cbd5e1; margin-bottom: 1.5rem; font-size: 1.05rem;"></p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <h4 style="color: var(--secondary); margin-bottom: 0.5rem;">Objectives</h4>
+                            <ul id="res-objectives"
+                                style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;"></ul>
+                        </div>
+                        <div>
+                            <h4 style="color: #f59e0b; margin-bottom: 0.5rem;">Tech Stack Strategy</h4>
+                            <div id="res-tech" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                        </div>
+                    </div>
+
+                    <div id="diagram-section" class="hidden" style="margin-bottom: 1.5rem;">
+                        <h4>Architecture Diagram</h4>
+                        <div class="mermaid" id="mermaid-viz"></div>
+                    </div>
+
+                    <h4>Key Features</h4>
+                    <div id="res-features" style="display: grid; gap: 1rem; margin-top: 0.5rem;"></div>
+
+                </div>
+
+                <details>
+                    <summary
+                        style="cursor: pointer; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        Debug: Raw JSON Output</summary>
+                    <pre id="raw-json">{}</pre>
+                </details>
+
+            </div>
         </div>
+
     </div>
 
+    <!-- LOGIC -->
     <script>
-        const API_BASE = '/api';
+        lucide.createIcons();
+        const API = '/api';
         let token = localStorage.getItem('token');
-        let lastToken = null; // Store last token for revoked test
+        let currentBrief = null;
+        let mode = 'draft';
 
-        // Check if already logged in
-        if (token) {
-            showDashboard();
+        // --- Init ---
+        if (token) initAuth();
+
+        function switchAuthMode(m) {
+            document.getElementById('form-login').classList.toggle('hidden', m !== 'login');
+            document.getElementById('form-register').classList.toggle('hidden', m !== 'register');
+            document.getElementById('tab-login').classList.toggle('active', m === 'login');
+            document.getElementById('tab-register').classList.toggle('active', m === 'register');
         }
 
-        function switchTab(tab) {
-            document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
-            document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
-            document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-            document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+        function setMode(m) {
+            mode = m;
+            document.getElementById('opt-draft').classList.toggle('active', m === 'draft');
+            document.getElementById('opt-polished').classList.toggle('active', m === 'polished');
         }
 
-        async function register() {
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-
-            try {
-                const res = await fetch(`${API_BASE}/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-                const data = await res.json();
-                showResult(data);
-
-                if (data.success) {
-                    alert('Register berhasil! Silakan login.');
-                    switchTab('login');
-                }
-            } catch (err) {
-                showResult({ error: err.message });
-            }
-        }
-
+        // --- AUTH ---
         async function login() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
+            if (!email || !password) return alert('Fill info plx');
 
             try {
-                const res = await fetch(`${API_BASE}/auth/login`, {
+                const res = await fetch(`${API}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
                 const data = await res.json();
-                showResult(data);
 
-                if (data.success && data.data.token) {
-                    token = data.data.token;
-                    localStorage.setItem('token', token);
-                    showDashboard(data.data.user);
-                    // Hide revoked test section when logging in
-                    document.getElementById('revoked-test-section').classList.add('hidden');
-                }
-            } catch (err) {
-                showResult({ error: err.message });
-            }
+                // Retrieve token from nested data structure
+                const token = data.data?.token || data.token;
+                const user = data.data?.user || data.user;
+
+                if (token) successLogin(token, user);
+                else alert(data.message || 'Login failed');
+            } catch (e) { alert(e.message); }
         }
 
-        async function testAuth() {
-            try {
-                const res = await fetch(`${API_BASE}/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                showResult(data);
-            } catch (err) {
-                showResult({ error: err.message });
-            }
-        }
-
-        async function logout() {
-            // Save token for revoked test
-            lastToken = token;
+        async function register() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
 
             try {
-                await fetch(`${API_BASE}/auth/logout`, {
+                const res = await fetch(`${API}/auth/register`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-            } catch (err) {
-                console.error('Logout API failed', err);
-            }
-
-            token = null;
-            localStorage.removeItem('token');
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('dashboard-section').classList.add('hidden');
-            document.getElementById('ai-section').classList.add('hidden');
-            document.getElementById('revoked-test-section').classList.remove('hidden');
-            showResult({ message: 'Logged out! Token di-blacklist.' });
-        }
-
-        async function testRevokedToken() {
-            if (!lastToken) {
-                showResult({ error: 'Tidak ada token tersimpan. Login dulu lalu logout.' });
-                return;
-            }
-            try {
-                const res = await fetch(`${API_BASE}/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${lastToken}` }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
                 });
                 const data = await res.json();
-                showResult(data);
-            } catch (err) {
-                showResult({ error: err.message });
-            }
+                if (data.success) {
+                    alert('Acc created! Login now.');
+                    switchAuthMode('login');
+                } else alert(data.message);
+            } catch (e) { alert(e.message); }
         }
 
-        function hideRevokedTest() {
-            document.getElementById('revoked-test-section').classList.add('hidden');
+        function successLogin(t, u) {
+            token = t;
+            localStorage.setItem('token', t);
+            if (u) localStorage.setItem('user_email', u.email);
+            initAuth();
         }
 
-        function showDashboard(user) {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('dashboard-section').classList.remove('hidden');
-            document.getElementById('ai-section').classList.remove('hidden');
-            if (user) {
-                document.getElementById('user-info').textContent = `Logged in as: ${user.email}`;
-            } else {
-                document.getElementById('user-info').textContent = 'Token found in localStorage';
-            }
+        function logout() {
+            token = null;
+            localStorage.clear();
+            location.reload();
+        }
+
+        function initAuth() {
+            document.getElementById('auth-card').classList.add('hidden');
+            document.getElementById('generator-card').classList.remove('hidden');
+            document.getElementById('nav-user-menu').classList.remove('hidden');
+            document.getElementById('nav-email').innerText = localStorage.getItem('user_email') || 'User';
             fetchCoins();
         }
 
         async function fetchCoins() {
             try {
-                const res = await fetch(`${API_BASE}/ai/coins`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('coin-balance').textContent = `${data.coins} Coins`;
-                }
-            } catch (err) {
-                console.error('Failed to fetch coins', err);
-            }
-        }
+                const res = await fetch(`${API}/ai/coins`, { headers: { 'Authorization': `Bearer ${token}` } });
 
-        function updateCoinDisplay(coins) {
-            document.getElementById('coin-balance').textContent = `${coins} Coins`;
-        }
-
-        let currentMode = 'draft';
-
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('btn-mode-draft').classList.toggle('active', mode === 'draft');
-            document.getElementById('btn-mode-polished').classList.toggle('active', mode === 'polished');
-        }
-
-        async function generateBrief() {
-            const projectName = document.getElementById('ai-project-name').value;
-            const projectDescription = document.getElementById('ai-project-desc').value;
-            const targetAudience = document.getElementById('ai-target').value;
-            const keyFeatures = document.getElementById('ai-features').value.split(',').map(s => s.trim()).filter(Boolean);
-            const techStack = document.getElementById('ai-tech').value.split(',').map(s => s.trim()).filter(Boolean);
-            const budget = document.getElementById('ai-budget').value;
-            const timeline = document.getElementById('ai-timeline').value;
-            const includeDiagram = document.getElementById('include-diagram').checked;
-
-            if (!projectName || !projectDescription) {
-                showResult({ error: 'projectName dan projectDescription wajib diisi!' });
-                return;
-            }
-
-            document.getElementById('btn-generate').disabled = true;
-            document.getElementById('ai-status').textContent = `Generating (${currentMode}${includeDiagram ? ' + Diagram' : ''})...`;
-
-            try {
-                const res = await fetch(`${API_BASE}/ai/project-brief`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        projectName,
-                        projectDescription,
-                        targetAudience,
-                        keyFeatures,
-                        techStack,
-                        budget,
-                        timeline,
-                        mode: currentMode,
-                        includeDiagram
-                    })
-                });
-                const data = await res.json();
-                showResult(data);
-
-                if (data.coins !== undefined) {
-                    updateCoinDisplay(data.coins);
-                }
-
-                document.getElementById('ai-status').textContent = data.success
-                    ? `Done! Mode: ${currentMode} ${includeDiagram ? '+ Diagram' : ''} | Tokens: ${data.metadata?.tokensUsed || 'N/A'} | Time: ${data.metadata?.processingTime || 'N/A'}ms`
-                    : `Error: ${data.code || 'Unknown'}`;
-            } catch (err) {
-                showResult({ error: err.message });
-                document.getElementById('ai-status').textContent = 'Network error';
-            } finally {
-                document.getElementById('btn-generate').disabled = false;
-            }
-        }
-
-        let lastResponseData = null;
-
-        function showResult(data) {
-            lastResponseData = data;
-            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-
-            // If it's a project brief response, render formatted output
-            if (data.success && data.data && data.data.title) {
-                renderProjectBrief(data.data, data.metadata);
-            } else {
-                // Show raw JSON for errors or other responses
-                document.getElementById('formatted-result').innerHTML = `
-                    <div style="padding: 1rem; background: ${data.success ? '#1a3a5c' : '#5c1a1a'}; border-radius: 8px;">
-                        <p style="color: ${data.success ? '#4ade80' : '#f87171'}; font-weight: bold;">
-                            ${data.success ? '✅ Success' : '❌ Error'}
-                        </p>
-                        <p style="color: #ccc;">${data.message || data.error || 'No message'}</p>
-                        ${data.code ? `<p style="color: #888; font-size: 0.85rem;">Code: ${data.code}</p>` : ''}
-                    </div>
-                `;
-            }
-        }
-
-        function toggleRawJson() {
-            const resultEl = document.getElementById('result');
-            resultEl.classList.toggle('hidden');
-        }
-
-        async function exportPdf() {
-            if (!lastResponseData || !lastResponseData.data) {
-                alert("Generate a project brief first!");
-                return;
-            }
-
-            const btn = document.getElementById('btn-export-pdf');
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Generating PDF...';
-            }
-
-            try {
-                const res = await fetch(`${API_BASE}/pdf/brief`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(lastResponseData.data)
-                });
-
-                if (res.status === 402) {
-                    const err = await res.json();
-                    alert(err.message);
+                if (res.status === 401 || res.status === 403) {
+                    logout();
                     return;
                 }
+
+                const d = await res.json();
+
+                if (d.success && d.coins !== undefined) {
+                    document.getElementById('coin-val').innerText = d.coins;
+                } else {
+                    document.getElementById('coin-val').innerText = 'Err';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- AI ---
+        async function generate() {
+            const btn = document.querySelector('button[onclick="generate()"]');
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="spin"></i> Generating...`;
+            document.getElementById('gen-status').innerText = "AI is thinking (this takes ~10-20s)...";
+            lucide.createIcons();
+
+            const payload = {
+                projectName: document.getElementById('p-name').value,
+                projectDescription: document.getElementById('p-desc').value,
+                mode: mode,
+                includeDiagram: document.getElementById('inc-diagram').checked,
+                techStack: document.getElementById('p-tech').value.split(','),
+                keyFeatures: document.getElementById('p-features').value.split(','),
+                targetAudience: document.getElementById('p-target').value
+            };
+
+            try {
+                const res = await fetch(`${API}/ai/project-brief`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    currentBrief = data.data;
+                    renderResult(data.data, data.metadata);
+                    if (data.coins) document.getElementById('coin-val').innerText = data.coins;
+                    document.getElementById('gen-status').innerText = `Success! ${data.metadata.processingTime}ms | ${data.metadata.tokensUsed || '?'} tokens`;
+                } else {
+                    alert(data.message);
+                    document.getElementById('gen-status').innerText = `Error: ${data.message}`;
+                }
+            } catch (e) {
+                alert('Network Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="play" size="18"></i> Generate Brief`;
+                lucide.createIcons();
+            }
+        }
+
+        async function renderResult(data, meta) {
+            document.getElementById('intro-placeholder').classList.add('hidden');
+            const container = document.getElementById('result-container');
+            container.classList.remove('hidden');
+
+            // Clear previous results manually except header/debug to reset content
+            const resultBox = container.querySelector('.result-box');
+            // We want to keep the header, so let's clear specific IDs or rebuild structure
+            // Simplified: Rebuild inner HTML of result-box to act as a blank canvas
+            document.getElementById('res-title').innerText = data.title;
+            document.getElementById('res-mode').innerText = mode.toUpperCase();
+            document.getElementById('raw-json').innerText = JSON.stringify(data, null, 2);
+
+            // Hide PDF button initially
+            const pdfBtn = document.getElementById('btn-pdf');
+            pdfBtn.style.opacity = '0';
+
+            // Clear containers
+            const overviewEl = document.getElementById('res-overview');
+            const objEl = document.getElementById('res-objectives');
+            const techEl = document.getElementById('res-tech');
+            const featEl = document.getElementById('res-features');
+            const diagSec = document.getElementById('diagram-section');
+            const diagViz = document.getElementById('mermaid-viz');
+
+            overviewEl.innerHTML = '';
+            objEl.innerHTML = '';
+            techEl.innerHTML = '';
+            featEl.innerHTML = '';
+            diagSec.classList.add('hidden');
+
+            // --- Helper to wait ---
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            const typeText = async (element, text, speed = 5) => {
+                element.innerHTML = '';
+                // Simple fade in for long text is better than typing
+                element.style.opacity = 0;
+                element.innerHTML = text;
+                element.classList.add('fade-in');
+                element.style.opacity = 1;
+                await sleep(300);
+            };
+
+            // 1. Overview
+            await typeText(overviewEl, data.overview);
+            await sleep(400);
+
+            // 2. Objectives
+            // Reset content
+            objEl.innerHTML = '';
+            for (const obj of data.objectives) {
+                const li = document.createElement('li');
+                li.innerText = obj;
+                li.className = 'fade-in';
+                objEl.appendChild(li);
+                await sleep(200);
+            }
+
+            // 3. Tech Stack
+            techEl.innerHTML = '';
+            for (const t of data.recommendedTechStack) {
+                const span = document.createElement('span');
+                span.className = 'tag tech fade-in';
+                span.title = t.reason;
+                span.innerText = t.technology;
+                techEl.appendChild(span);
+                await sleep(100);
+            }
+            await sleep(300);
+
+            // 4. Features (Staggered)
+            featEl.innerHTML = '';
+            if (data.keyFeatures) {
+                for (const f of data.keyFeatures) {
+                    const div = document.createElement('div');
+                    div.style.background = 'rgba(255,255,255,0.05)';
+                    div.style.padding = '1rem';
+                    div.style.borderRadius = '6px';
+                    div.className = 'fade-in'; // Animation class
+                    div.style.marginBottom = '1rem';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 0.3rem;">
+                            <strong style="color: #e2e8f0;">${f.name}</strong>
+                            <span class="tag ${f.priority?.toLowerCase() || 'should'}">${f.priority || 'Should'}</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #94a3b8;">${f.description}</p>
+                    `;
+                    featEl.appendChild(div);
+                    div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    await sleep(400);
+                }
+            }
+
+            // 5. Success Criteria (New)
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fade-in';
+            successDiv.style.marginBottom = '1.5rem';
+            successDiv.innerHTML = `
+                <h4 style="color: #4ade80;">Success Criteria</h4>
+                <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
+                    ${data.successCriteria?.map(c => `<li><strong>${c.metric}:</strong> ${c.target}</li>`).join('') || '<li>N/A</li>'}
+                </ul>
+            `;
+            featEl.parentNode.insertBefore(successDiv, featEl);
+            await sleep(300);
+
+            // 6. User Flow (New)
+            if (data.userFlow) {
+                const flowDiv = document.createElement('div');
+                flowDiv.className = 'fade-in';
+                flowDiv.style.marginTop = '1.5rem';
+                flowDiv.innerHTML = `
+                    <h4 style="color: #fca5a5;">User Flow</h4>
+                    <ol style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
+                        ${data.userFlow.steps?.map(s => `<li>${s}</li>`).join('') || ''}
+                    </ol>
+                `;
+                featEl.parentNode.appendChild(flowDiv);
+                await sleep(300);
+            }
+
+            // 7. SRS Modules (New)
+            if (data.srsModules) {
+                const srsDiv = document.createElement('div');
+                srsDiv.className = 'fade-in';
+                srsDiv.style.marginTop = '1.5rem';
+                srsDiv.innerHTML = `
+                    <h4 style="color: #f472b6;">SRS Modules</h4>
+                    ${data.srsModules.map(m => `
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: #e2e8f0; display:block; margin-bottom:0.3rem;">${m.moduleName}</strong>
+                            <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.9rem;">
+                                ${m.requirements.map(r => `<li>[${r.id}] ${r.userStory}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `).join('')}
+                `;
+                featEl.parentNode.appendChild(srsDiv);
+                await sleep(300);
+            }
+
+            // 8. Risks (New)
+            if (data.risks) {
+                const riskDiv = document.createElement('div');
+                riskDiv.className = 'fade-in';
+                riskDiv.style.marginTop = '1.5rem';
+                riskDiv.innerHTML = `
+                    <h4 style="color: #ef4444;">Risks & Mitigation</h4>
+                    <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
+                         ${data.risks.map(r => `<li><strong>${r.risk}</strong> (${r.type}): ${r.mitigation}</li>`).join('')}
+                    </ul>
+                `;
+                featEl.parentNode.appendChild(riskDiv);
+                await sleep(300);
+            }
+
+            // 9. Clarification Log (New)
+            if (data.clarificationLog) {
+                const logDiv = document.createElement('div');
+                logDiv.className = 'fade-in';
+                logDiv.style.marginTop = '1.5rem';
+                logDiv.style.background = 'rgba(255,255,255,0.03)';
+                logDiv.style.padding = '1rem';
+                logDiv.style.borderRadius = '8px';
+                logDiv.innerHTML = `
+                    <h4 style="color: #fbbf24; margin-bottom:0.5rem;">AI Clarification Log</h4>
+                    <ul style="padding-left: 1.2rem; color: #94a3b8; font-size: 0.9rem;">
+                         ${data.clarificationLog.map(l => `<li><strong>${l.topic}:</strong> ${l.advice}</li>`).join('')}
+                    </ul>
+                `;
+                featEl.parentNode.appendChild(logDiv);
+                await sleep(300);
+            }
+
+            // 10. Diagram (Last because heaviest)
+            if (data.diagram) {
+                diagSec.classList.remove('hidden');
+                diagSec.scrollIntoView({ behavior: 'smooth' });
+                diagViz.innerHTML = '<div style="color:#aaa; text-align:center;"><i data-lucide="loader" class="spin"></i> Rendering Diagram...</div>';
+                lucide.createIcons();
+                await sleep(800); // Fake "rendering" time
+
+                diagViz.innerHTML = data.diagram.diagram;
+                diagViz.removeAttribute('data-processed');
+
+                try {
+                    await mermaid.init(undefined, diagViz);
+                    diagViz.className = 'mermaid fade-in';
+                } catch (e) {
+                    diagViz.innerHTML = 'Diagram syntax error';
+                }
+            } else {
+                diagSec.classList.add('hidden');
+            }
+
+            // Show PDF button
+            pdfBtn.style.opacity = '1';
+            pdfBtn.style.transition = 'opacity 0.5s';
+
+            // Re-init pdf button state
+            pdfBtn.disabled = false;
+            pdfBtn.innerHTML = `<i data-lucide="file-down" size="16"></i> Export PDF (1c)`;
+            lucide.createIcons();
+        }
+
+        async function downloadPdf() {
+            if (!currentBrief) return;
+            const btn = document.getElementById('btn-pdf');
+            btn.innerHTML = `Downloading...`;
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API}/pdf/brief`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(currentBrief)
+                });
 
                 if (res.ok) {
                     const blob = await res.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `${lastResponseData.data.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_brief.pdf`;
+                    a.download = `${currentBrief.title}_Brief.pdf`;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
-                    window.URL.revokeObjectURL(url);
 
-                    // Update coins
-                    const coinsHeader = res.headers.get('X-Coins-Remaining');
-                    if (coinsHeader) updateCoinDisplay(coinsHeader);
-
-                    // Also try to fetch fresh coins to be sure
+                    // update coins
                     fetchCoins();
                 } else {
-                    const errorText = await res.text();
-                    alert('Failed to generate PDF: ' + errorText);
+                    const txt = await res.text();
+                    alert("Error: " + txt);
                 }
-            } catch (err) {
-                console.error(err);
-                alert('Error generating PDF');
-            } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = 'Export PDF (1 coin)';
-                }
-            }
-        }
-
-        async function renderProjectBrief(brief, metadata) {
-            const html = `
-                <div style="background: #1a3a5c; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <h3 style="color: #4ade80; margin: 0 0 0.5rem 0;">${brief.title}</h3>
-                        <button id="btn-export-pdf" onclick="exportPdf()" style="padding: 0.25rem 0.5rem; background: #eab308; color: #1a1a2e; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">Export PDF (1 coin)</button>
-                    </div>
-                    <p style="color: #ccc; line-height: 1.6;">${brief.overview}</p>
-                    ${metadata ? `<p style="color: #666; font-size: 0.75rem; margin-top: 0.5rem;">
-                        ${metadata.processingTime}ms | ${metadata.tokensUsed} tokens | Key #${metadata.keyIndex}
-                    </p>` : ''}
-                </div>
-                
-                ${brief.diagram ? `
-                <div style="background: #1a3a5c; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
-                    <h3 style="color: #4ade80; margin: 0 0 0.5rem 0;">Architecture Diagram</h3>
-                    <div id="diagram-container-brief" style="background: #fff; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
-                        <div id="mermaid-output-brief">Rendering diagram...</div>
-                    </div>
-                    <p style="color: #ccc; margin-top: 0.5rem;">${brief.diagram.description}</p>
-                </div>
-                ` : ''}
-
-                <!-- Objectives & Targets -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
-                        <h4 style="color: #f59e0b; margin: 0 0 0.5rem 0;">AI Clarification Log</h4>
-                        <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
-                            ${brief.clarificationLog?.map(c => `<li><strong>${c.topic}</strong>: ${c.advice}</li>`).join('') || '<li>N/A</li>'}
-                        </ul>
-                    </div>
-                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
-                        <h4 style="color: #4ade80; margin: 0 0 0.5rem 0;">Success Criteria</h4>
-                         <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
-                            ${brief.successCriteria?.map(c => `<li>${c.metric ? `${c.metric}: ${c.target}` : c}</li>`).join('') || '<li>N/A</li>'}
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Features & Priority -->
-                <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-                    <h4 style="color: #60a5fa; margin: 0 0 0.75rem 0;">Key Features (MoSCoW)</h4>
-                    <div style="display: grid; gap: 0.5rem;">
-                        ${brief.keyFeatures?.map(f => `
-                            <div style="background: #1a3a5c; padding: 0.75rem; border-radius: 4px;">
-                                <div style="display: flex; justify-content: space-between;">
-                                    <strong style="color: #4ade80;">${f.name}</strong>
-                                    <span style="background: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${f.priority || 'Should'}</span>
-                                </div>
-                                <p style="color: #aaa; margin: 0.25rem 0 0 0; font-size: 0.9rem;">${f.description}</p>
-                            </div>
-                        `).join('') || '<p style="color: #888;">N/A</p>'}
-                    </div>
-                </div>
-
-                 <!-- SRS Modules -->
-                 ${brief.srsModules ? `
-                 <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-                    <h4 style="color: #fca5a5; margin: 0 0 0.75rem 0;">SRS Modules</h4>
-                    ${brief.srsModules.map(mod => `
-                        <div style="margin-bottom: 0.5rem;">
-                            <strong style="color: #ddd;">${mod.moduleName}</strong>
-                            <ul style="color: #aaa; padding-left: 1.2rem; font-size: 0.9rem;">
-                                ${mod.requirements.map(req => `<li>[${req.id || 'REQ'}] ${req.userStory}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `).join('')}
-                 </div>` : ''}
-
-                <!-- Risks -->
-                 ${brief.risks ? `
-                 <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-                    <h4 style="color: #f87171; margin: 0 0 0.75rem 0;">Risks & Mitigation</h4>
-                    <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
-                         ${brief.risks.map(r => `<li><strong>${r.risk}</strong>: ${r.mitigation}</li>`).join('')}
-                    </ul>
-                 </div>` : ''}
-
-                <!-- Tech Stack -->
-                ${brief.recommendedTechStack?.length ? `
-                <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-                    <h4 style="color: #a78bfa; margin: 0 0 0.75rem 0;">Recommended Tech Stack</h4>
-                    <div style="display: grid; gap: 0.5rem;">
-                        ${brief.recommendedTechStack.map(t => `
-                            <div style="background: #1a3a5c; padding: 0.75rem; border-radius: 4px; display: flex; gap: 1rem; align-items: flex-start;">
-                                <span style="background: #4c1d95; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #c4b5fd;">${t.category}</span>
-                                <div>
-                                    <strong style="color: #a78bfa;">${t.technology}</strong>
-                                    <p style="color: #aaa; margin: 0.25rem 0 0 0; font-size: 0.85rem;">${t.reason}</p>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : ''}
-            `;
-            document.getElementById('formatted-result').innerHTML = html;
-
-            // Render mermaid if present
-            if (brief.diagram) {
-                setTimeout(async () => {
-                    const output = document.getElementById('mermaid-output-brief');
-                    try {
-                        // Reset if needed
-                        output.innerHTML = '';
-                        const { svg } = await mermaid.render('diagram-svg-brief', brief.diagram.diagram);
-                        output.innerHTML = svg;
-                    } catch (err) {
-                        console.error('Mermaid error:', err);
-                        output.innerHTML = `<pre style="color: #333; font-size: 0.85rem; overflow-x: auto;">${brief.diagram.diagram}</pre>
-                        <p style="color: red; font-size: 0.8rem;">Failed to render diagram</p>`;
-                    }
-                }, 100);
+            } catch (e) { console.error(e); alert('PDF failed'); }
+            finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="file-down" size="16"></i> Export PDF (1c)`;
+                lucide.createIcons();
             }
         }
     </script>
+
+    <style>
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </body>
 
 </html>

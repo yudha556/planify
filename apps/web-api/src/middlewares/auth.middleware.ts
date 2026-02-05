@@ -1,15 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { TokenExpiredError, JsonWebTokenError } from "jsonwebtoken";
-import { env } from "../config/env";
-import { AuthPayload } from "../types";
 import { ErrorCodes } from "../utils/app-error";
 import { tokenBlacklist } from "../utils/token-blacklist";
 
-export const authenticate = (
+import { supabase } from "../config/supabase";
+
+export const authenticate = async (
     req: Request,
     res: Response,
     next: NextFunction
-): void | any => {
+): Promise<any> => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -40,31 +39,27 @@ export const authenticate = (
     }
 
     try {
-        const decoded = jwt.verify(token, env.jwtSecret) as AuthPayload;
-        req.user = decoded;
-        next();
-    } catch (error) {
-        // Differentiate between expired and invalid tokens
-        if (error instanceof TokenExpiredError) {
-            return res.status(401).json({
-                success: false,
-                message: "Token has expired",
-                code: ErrorCodes.TOKEN_EXPIRED,
-            });
-        }
+        const { data, error } = await supabase.auth.getUser(token);
 
-        if (error instanceof JsonWebTokenError) {
+        if (error || !data.user) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid token",
+                message: "Invalid or expired token",
                 code: ErrorCodes.TOKEN_INVALID,
             });
         }
 
-        return res.status(401).json({
+        req.user = {
+            userId: data.user.id,
+            email: data.user.email || "",
+        };
+
+        next();
+    } catch (error) {
+        return res.status(500).json({
             success: false,
             message: "Authentication failed",
-            code: ErrorCodes.TOKEN_INVALID,
+            code: ErrorCodes.INTERNAL_ERROR,
         });
     }
 };

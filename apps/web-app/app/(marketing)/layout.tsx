@@ -6,11 +6,18 @@ export default function MarketingLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen w-screen flex flex-col overflow-x-hidden">
-      {/* navbar landing */}
-      <Navbar />
-      {children}
-      {/* footer */}
+    <div className="h-screen w-screen overflow-hidden">
+      
+      {/* Navbar fixed */}
+      <div className="fixed top-0 left-0 w-full z-50">
+        <Navbar />
+      </div>
+
+      {/* Scrollable content */}
+      <main className="pt-16 h-full overflow-y-auto custom-scroll">
+        {children}
+      </main>
+
     </div>
   )
 }

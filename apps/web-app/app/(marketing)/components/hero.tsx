@@ -44,7 +44,7 @@ export default function Hero() {
           <div className="flex flex-col gap-8">
             <h1 className="text-5xl font-bold">
               Generate Project Documents <br />
-              <span className="text-indigo-500">in Minutes</span>
+              <span className="text-blue-600">in Minutes</span>
             </h1>
             <h3 className="text-lg font-medium text-gray-500">
               PRD, Project Brief, Feature List, and User Flow - Structured,

@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -9,13 +11,25 @@ import {
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+
+    const router = useRouter()
+
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        // await fetch apahasdoa
+
+        router.push("/otp")
+    }
+    
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={onSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>

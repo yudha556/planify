@@ -10,6 +10,7 @@ import { asyncHandler } from "../utils/async-handler";
 import { aiService, ProjectBriefInput, DiagramInput } from "../services/ai";
 import { coinService, COIN_COSTS } from "../services/coin";
 import { ErrorCodes } from "../utils/app-error";
+import { supabase } from "../services/supabase";
 
 // AI-specific error codes
 const AI_ERROR_CODES = {
@@ -23,8 +24,17 @@ export const aiController = {
      */
     generateProjectBrief: asyncHandler(
         async (req: Request, res: Response): Promise<any> => {
-            const { projectName, projectDescription, targetAudience, keyFeatures, techStack, mode, includeDiagram } =
-                req.body;
+            const {
+                projectName,
+                projectDescription,
+                targetAudience,
+                keyFeatures,
+                techStack,
+                mode,
+                includeDiagram,
+                budget,
+                timeline
+            } = req.body;
             const userId = (req as any).user?.userId || "anonymous";
 
             // Validate required fields
@@ -36,18 +46,27 @@ export const aiController = {
                 });
             }
 
+            // ... imports
+
+
+            // ... inside generateProjectBrief ...
+
             // Check coins
             // Draft: 2, Polished: 4, Diagram: 2
             const briefCost = mode === "polished" ? COIN_COSTS.BRIEF_POLISHED : COIN_COSTS.BRIEF_DRAFT;
             const diagramCost = includeDiagram ? COIN_COSTS.DIAGRAM : 0;
             const totalCost = briefCost + diagramCost;
 
-            if (!coinService.hasEnough(userId, totalCost)) {
+            // [MODIFIED]: await async coin check
+            const hasCoins = await coinService.hasEnough(userId, totalCost);
+            const currentBalance = await coinService.getBalance(userId);
+
+            if (!hasCoins) {
                 return res.status(402).json({
                     success: false,
-                    message: `Insufficient coins. Need ${totalCost}, have ${coinService.getBalance(userId)}`,
+                    message: `Insufficient coins. Need ${totalCost}, have ${currentBalance}`,
                     code: AI_ERROR_CODES.INSUFFICIENT_COINS,
-                    coins: coinService.getBalance(userId),
+                    coins: currentBalance,
                 });
             }
 
@@ -57,6 +76,8 @@ export const aiController = {
                 targetAudience,
                 keyFeatures,
                 techStack,
+                budget,
+                timeline,
                 mode: mode === "polished" ? "polished" : "draft",
             };
 
@@ -67,15 +88,10 @@ export const aiController = {
             // 2. Generate Diagram (if requested)
             let diagramData = undefined;
             if (includeDiagram && briefData) {
-                // Use the structured output from the brief to inform the diagram generation if possible,
-                // or just stay consistent with inputs.
-                // Using input is faster/parallel, but using brief might be more consistent.
-                // Let's stick to using input for now to avoid complexity of "chained" prompts in a simple controller.
                 const diagramInput: DiagramInput = {
                     projectName,
                     projectDescription,
-                    techStack: briefData.recommendedTechStack.map(t => t.technology) // Use recommended tech if available? Or input?
-                    // Let's prefer the output tech stack as it's more refined.
+                    techStack: briefData.recommendedTechStack.map(t => t.technology)
                 };
 
                 const diagramResult = await aiService.generateDiagram(diagramInput);
@@ -86,7 +102,18 @@ export const aiController = {
             }
 
             // Deduct coins on success
-            coinService.deduct(userId, totalCost);
+            await coinService.deduct(userId, totalCost);
+            const newBalance = await coinService.getBalance(userId);
+
+            // [NEW] Save to Supabase 'projects' table
+            if (userId && userId !== "anonymous") {
+                await supabase.from("projects").insert({
+                    user_id: userId,
+                    title: projectName,
+                    description: projectDescription,
+                    content: briefData,
+                });
+            }
 
             return res.status(200).json({
                 success: true,
@@ -96,7 +123,7 @@ export const aiController = {
                     ...result.metadata,
                     diagramIncluded: !!diagramData
                 },
-                coins: coinService.getBalance(userId),
+                coins: newBalance,
             });
         }
     ),
@@ -153,7 +180,7 @@ export const aiController = {
         const userId = (req as any).user?.userId || "anonymous";
         return res.status(200).json({
             success: true,
-            coins: coinService.getBalance(userId),
+            coins: await coinService.getBalance(userId),
         });
     }),
 
@@ -170,4 +197,62 @@ export const aiController = {
             data: { available, provider },
         });
     }),
+
+    /**
+     * Regenerate a specific section
+     * @route POST /api/ai/regenerate-section
+     */
+    regenerateSection: asyncHandler(
+        async (req: Request, res: Response): Promise<any> => {
+            const { currentContent, section, instruction } = req.body;
+            const userId = (req as any).user?.userId || "anonymous";
+
+            if (!currentContent || !section || !instruction) {
+                return res.status(400).json({
+                    success: false,
+                    message: "currentContent, section, and instruction are required",
+                    code: ErrorCodes.VALIDATION_ERROR,
+                });
+            }
+
+            // Check coins (Cost: 1)
+            const cost = 1;
+            if (!await coinService.hasEnough(userId, cost)) {
+                return res.status(402).json({
+                    success: false,
+                    message: `Insufficient coins. Need ${cost}, have ${await coinService.getBalance(userId)}`,
+                    code: AI_ERROR_CODES.INSUFFICIENT_COINS,
+                    coins: await coinService.getBalance(userId),
+                });
+            }
+
+            // Allowed sections
+            const ALLOWED_SECTIONS = [
+                "overview", "problemStatement", "objectives", "keyFeatures",
+                "userFlow", "srsModules", "recommendedTechStack",
+                "scope", "risks", "clarificationLog"
+            ];
+
+            if (!ALLOWED_SECTIONS.includes(section)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid section. Allowed: ${ALLOWED_SECTIONS.join(", ")}`,
+                    code: ErrorCodes.VALIDATION_ERROR,
+                });
+            }
+
+            const result = await aiService.regenerateSection(currentContent, section, instruction);
+
+            // Deduct coins
+            await coinService.deduct(userId, cost);
+
+            return res.status(200).json({
+                success: true,
+                message: "Section regenerated successfully",
+                data: result.data,
+                metadata: result.metadata,
+                coins: await coinService.getBalance(userId),
+            });
+        }
+    ),
 };

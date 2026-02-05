@@ -175,26 +175,83 @@
 
             <!-- Login Form -->
             <div id="login-form">
-                <input type="email" id="login-email" placeholder="Email">
-                <input type="password" id="login-password" placeholder="Password">
+                <h2>Login</h2>
+                <input type="email" id="login-email" placeholder="Email" value="cayatest3@gmail.com">
+                <input type="password" id="login-password" placeholder="Password" value="cayatest3">
                 <button onclick="login()">Login</button>
             </div>
 
             <!-- Register Form -->
             <div id="register-form" class="hidden">
-                <input type="text" id="register-name" placeholder="Name (optional)">
+                <h2>Register</h2>
                 <input type="email" id="register-email" placeholder="Email">
                 <input type="password" id="register-password" placeholder="Password">
+                <input type="text" id="register-name" placeholder="Full Name (Optional)">
                 <button onclick="register()">Register</button>
             </div>
         </div>
 
         <!-- Dashboard Section (Hidden until logged in) -->
         <div id="dashboard-section" class="card hidden">
-            <h2>Authenticated!</h2>
-            <div id="user-info" class="status success"></div>
-            <button class="secondary" onclick="testAuth()">Test GET /me</button>
-            <button class="danger" onclick="logout()">Logout</button>
+            <div class="tabs">
+                <button class="active" onclick="switchTab('dashboard')">Home</button>
+                <button onclick="switchTab('history')">History</button>
+            </div>
+
+            <div id="dashboard-tab">
+                <!-- Existing Dashboard Content -->
+                <div class="status success" id="user-info"></div>
+                <div class="status success" style="background: #eab308; color: #000; font-weight: bold;">
+                    💰 Balance: <span id="coin-balance">Loading...</span>
+                </div>
+
+                <!-- AI Generation Form -->
+                <div id="ai-section">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2>AI - Generate Project Brief</h2>
+                        <span class="coin-display" id="coin-balance-ai">10 Coins</span>
+                    </div>
+                    <input type="text" id="ai-project-name" placeholder="Project Name (required)">
+                    <textarea id="ai-project-desc" placeholder="Project Description (required)"
+                        style="width: 100%; padding: 0.75rem; margin-bottom: 0.75rem; border: none; border-radius: 4px; font-size: 1rem; background: #0f3460; color: #fff; min-height: 80px; resize: vertical;"></textarea>
+                    <input type="text" id="ai-target" placeholder="Target Audience (optional)">
+                    <input type="text" id="ai-features" placeholder="Key Features (comma-separated, optional)">
+                    <input type="text" id="ai-tech" placeholder="Tech Stack (comma-separated, optional)">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <input type="text" id="ai-budget" placeholder="Budget (e.g. $50k) - Optional">
+                        <input type="text" id="ai-timeline" placeholder="Timeline (e.g. 3 months) - Optional">
+                    </div>
+                    <div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <label style="color: #888; font-size: 0.85rem;">Mode:</label>
+                        <div class="mode-toggle">
+                            <button id="btn-mode-draft" class="active" onclick="setMode('draft')">Draft (2
+                                coins)</button>
+                            <button id="btn-mode-polished" onclick="setMode('polished')">Polished (4 coins)</button>
+                        </div>
+                    </div>
+
+                    <div
+                        style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; background: #16213e; padding: 0.5rem; border-radius: 4px;">
+                        <input type="checkbox" id="include-diagram" style="width: auto; margin: 0;">
+                        <label for="include-diagram" style="color: #4ade80; cursor: pointer;">Include Architecture
+                            Diagram (+2
+                            coins)</label>
+                    </div>
+
+                    <button class="secondary" onclick="generateBrief()" id="btn-generate">Generate Project
+                        Brief</button>
+                    <p id="ai-status" style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;"></p>
+                </div>
+                <button class="secondary" onclick="testAuth()">Test GET /me</button>
+                <button class="danger" onclick="logout()">Logout</button>
+            </div>
+
+            <div id="history-tab" class="hidden">
+                <h2>Your Projects</h2>
+                <button class="secondary" onclick="fetchProjects()">Refresh List</button>
+                <div id="projects-list" style="margin-top: 1rem;">Loading...</div>
+            </div>
         </div>
 
         <!-- Test Revoked Token Section (Hidden until logout) -->
@@ -387,6 +444,148 @@
             fetchCoins();
         }
 
+        // Editor Logic
+        function closeEditor() {
+            document.getElementById('project-editor-section').classList.add('hidden');
+            document.getElementById('history-tab').classList.remove('hidden');
+        }
+
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('open');
+        }
+
+        async function loadProject(id) {
+            try {
+                const res = await fetch(`${API_BASE}/projects/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentProject = data.data; // Store full project object
+                    renderEditor(data.data);
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function renderEditor(project) {
+            document.getElementById('history-tab').classList.add('hidden');
+            document.getElementById('project-editor-section').classList.remove('hidden');
+            document.getElementById('editor-title').textContent = project.title || 'Untitled Project';
+
+            const container = document.getElementById('editor-container');
+            container.innerHTML = '';
+
+            const content = project.content;
+            if (!content) {
+                container.innerHTML = '<div class="status error">No content found</div>';
+                return;
+            }
+
+            // Define order and display names
+            const sections = [
+                { key: 'overview', label: 'Executive Summary' },
+                { key: 'problemStatement', label: 'Problem Statement' },
+                { key: 'objectives', label: 'Objectives' },
+                { key: 'keyFeatures', label: 'Key Features' },
+                { key: 'userFlow', label: 'User Flow' },
+                { key: 'srsModules', label: 'SRS Modules' },
+                { key: 'recommendedTechStack', label: 'Tech Stack' },
+                { key: 'scope', label: 'Scope (MVP)' },
+                { key: 'risks', label: 'Risks' },
+                { key: 'clarificationLog', label: 'Clarification Log' }
+            ];
+
+            sections.forEach(sec => {
+                if (content[sec.key]) {
+                    const jsonString = JSON.stringify(content[sec.key], null, 2);
+                    const html = `
+                        <div class="editor-section">
+                            <div class="editor-header">
+                                <span onclick="toggleSection(this.parentElement)">${sec.label}</span>
+                                <button class="secondary" style="margin:0; width:auto; font-size:0.8rem; padding:4px 8px;" 
+                                    onclick="openRegenerateModal('${sec.key}')">Regenerate (1c)</button>
+                            </div>
+                            <div class="editor-content" id="content-${sec.key}">
+                                <pre style="margin:0;">${jsonString}</pre>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                }
+            });
+        }
+
+        function openRegenerateModal(key) {
+            activeSection = key;
+            document.getElementById('regen-section-name').textContent = key;
+            document.getElementById('regen-instruction').value = '';
+            document.getElementById('regen-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('regen-modal').style.display = 'none';
+        }
+
+        async function confirmRegenerate() {
+            if (!activeSection) return;
+            const instruction = document.getElementById('regen-instruction').value;
+            if (!instruction) {
+                alert("Please enter an instruction");
+                return;
+            }
+
+            const btn = document.getElementById('btn-confirm-regen');
+            btn.textContent = "Processing...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/ai/regenerate-section`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentContent: currentProject.content,
+                        section: activeSection,
+                        instruction: instruction
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    // Update local state
+                    currentProject.content[activeSection] = data.data;
+
+                    // Re-render UI
+                    const contentEl = document.getElementById(`content-${activeSection}`);
+                    if (contentEl) {
+                        contentEl.innerHTML = `<pre style="margin:0;">${JSON.stringify(data.data, null, 2)}</pre>`;
+                        contentEl.classList.add('open');
+                        contentEl.style.border = "1px solid #4ade80"; // Highlight change
+                        setTimeout(() => contentEl.style.border = "none", 2000);
+                    }
+
+                    // Update coins
+                    fetchCoins();
+                    closeModal();
+
+                    // TODO: Auto-save back to DB? For now just visual update.
+                    alert("Regeneration successful! Value updated.");
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch (err) {
+                alert("Request failed: " + err.message);
+            } finally {
+                btn.textContent = "Regenerate";
+                btn.disabled = false;
+            }
+        }
+
         async function fetchCoins() {
             try {
                 const res = await fetch(`${API_BASE}/ai/coins`, {
@@ -394,7 +593,11 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    document.getElementById('coin-balance').textContent = `${data.coins} Coins`;
+                    const coinText = `${data.coins} Coins`;
+                    document.getElementById('coin-balance').textContent = coinText;
+                    // Also update the badge in AI section if it exists
+                    const aiBadge = document.getElementById('coin-balance-ai');
+                    if (aiBadge) aiBadge.textContent = coinText;
                 }
             } catch (err) {
                 console.error('Failed to fetch coins', err);

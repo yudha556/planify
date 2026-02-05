@@ -33,13 +33,18 @@ export const pdfController = {
 
             // Check coins
             const cost = COIN_COSTS.PDF;
-            if (!coinService.hasEnough(userId, cost)) {
+            if (!await coinService.hasEnough(userId, cost)) {
                 return res.status(402).json({
                     success: false,
-                    message: `Insufficient coins. Need ${cost}, have ${coinService.getBalance(userId)}`,
+                    message: `Insufficient coins. Need ${cost}, have ${await coinService.getBalance(userId)}`,
                     code: "INSUFFICIENT_COINS",
                 });
             }
+
+            // Determine Version/Status based on Mode (For Consistency)
+            const mode = brief.metadata?.mode || "draft";
+            const version = mode === "polished" ? "1.0 (FINAL)" : "0.1 (DRAFT)";
+            const status = mode === "polished" ? "Approved / Final" : "Draft / Review";
 
             // Convert brief to HTML (Full 10-Section PRD)
             const htmlContent = `
@@ -53,15 +58,15 @@ export const pdfController = {
                             <span class="cover-label">Project Name:</span> ${brief.title}
                         </div>
                         <div class="cover-info-item">
-                            <span class="cover-label">Version:</span> 1.0 (DRAFT)
+                            <span class="cover-label">Version:</span> ${version}
                         </div>
                         <div class="cover-info-item">
                             <span class="cover-label">Date:</span> ${new Date().toLocaleDateString()}
                         </div>
                         <div class="cover-info-item">
-                            <span class="cover-label">Status:</span> ${brief.srsModules ? 'Polished / Final' : 'Draft / Review'}
+                            <span class="cover-label">Status:</span> ${status}
                         </div>
-                         <div class="cover-info-item">
+                        <div class="cover-info-item">
                             <span class="cover-label">Platform:</span> ${brief.platformCategory || 'Web Application'}
                         </div>
                     </div>

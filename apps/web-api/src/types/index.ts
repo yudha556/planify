@@ -8,12 +8,12 @@ export interface ApiResponse<T = any> {
 }
 
 export interface AuthPayload {
-  userId: number;
+  userId: string;
   email: string;
 }
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name?: string | null;
 }

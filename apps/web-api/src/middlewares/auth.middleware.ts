@@ -1,15 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { TokenExpiredError, JsonWebTokenError } from "jsonwebtoken";
-import { env } from "../config/env";
-import { AuthPayload } from "../types";
+import { authService } from "../services/auth.service";
 import { ErrorCodes } from "../utils/app-error";
 import { tokenBlacklist } from "../utils/token-blacklist";
 
-export const authenticate = (
+export const authenticate = async (
     req: Request,
     res: Response,
     next: NextFunction
-): void | any => {
+): Promise<void | any> => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -40,30 +38,14 @@ export const authenticate = (
     }
 
     try {
-        const decoded = jwt.verify(token, env.jwtSecret) as AuthPayload;
+        const decoded = await authService.verifyToken(token);
         req.user = decoded;
         next();
     } catch (error) {
-        // Differentiate between expired and invalid tokens
-        if (error instanceof TokenExpiredError) {
-            return res.status(401).json({
-                success: false,
-                message: "Token has expired",
-                code: ErrorCodes.TOKEN_EXPIRED,
-            });
-        }
-
-        if (error instanceof JsonWebTokenError) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid token",
-                code: ErrorCodes.TOKEN_INVALID,
-            });
-        }
-
+        // AppError handling usually happens in error middleware, but here we catch inline
         return res.status(401).json({
             success: false,
-            message: "Authentication failed",
+            message: "Invalid or expired token",
             code: ErrorCodes.TOKEN_INVALID,
         });
     }

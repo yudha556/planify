@@ -7,16 +7,16 @@
 
 import { groqProvider } from "./providers/groq.provider";
 import {
-    AITaskType,
-    LLMResponse,
-    ProjectBriefInput,
-    ProjectBriefOutput,
-    DiagramInput,
-    DiagramOutput,
+  AITaskType,
+  LLMResponse,
+  ProjectBriefInput,
+  ProjectBriefOutput,
+  DiagramInput,
+  DiagramOutput,
 } from "./types";
 
 const SYSTEM_PROMPTS: Record<AITaskType, string> = {
-    generate_project_brief_draft: `You are a professional software project planner.
+  generate_project_brief_draft: `You are a professional software project planner.
 Generate a CONCISE Product Requirements Document (Draft Mode).
 Output MUST be valid JSON with ONLY these sections:
 
@@ -62,7 +62,7 @@ RULES:
 - Tech Stack: Max 3 main technologies.
 - NO OTHER SECTIONS ALLOWED. Optimize for minimum tokens.`,
 
-    generate_project_brief_polished: `You are a professional software project planner creating enterprise-grade PRDs.
+  generate_project_brief_polished: `You are a professional software project planner creating enterprise-grade PRDs.
 Generate a COMPLETE Product Requirements Document based on user input.
 
 Output MUST be valid JSON with ALL sections below:
@@ -149,15 +149,31 @@ RULES:
 - Risks: Include Technical, Business, and Operational risks.
 - Clarification Log: Simulate 2-3 key technical decisions or advice relevant to this project (e.g., 'Auth Strategy', 'Database Scaling'). Use current date.`,
 
-    generate_srs: `You are a software requirements analyst.
+  recover_json_error: `You are a JSON fixer.
+User input is invalid JSON. Output VALID JSON.`,
+
+  regenerate_section: `You are an expert Product Manager rewriting a specific section of a PRD.
+    
+INPUT:
+1. Full Context: The entire PRD for context.
+2. Target Section: The specific key to rewrite.
+3. Instruction: User's specific request for changes.
+
+OUTPUT:
+- Return ONLY valid JSON content for THAT SPECIFIC SECTION.
+- Do NOT return the full document.
+- Do NOT wrap in markdown.
+- MAINTAIN consistency with the rest of the document.`,
+
+  generate_srs: `You are a software requirements analyst.
 Generate a Software Requirements Specification based on input.
 Output valid JSON with sections, requirements, and acceptance criteria.`,
 
-    generate_technical_overview: `You are a technical architect.
+  generate_technical_overview: `You are a technical architect.
 Generate a technical overview document based on project requirements.
 Output valid JSON with architecture decisions, tech stack rationale, and considerations.`,
 
-    generate_architecture_diagram: `You are a software architect. Generate a Mermaid diagram for system architecture.
+  generate_architecture_diagram: `You are a software architect. Generate a Mermaid diagram for system architecture.
 Output MUST be valid JSON:
 {
   "diagram": "graph TD\\n  A[Client] -->|HTTPS| B[API]\\n  B --> C[Database]",
@@ -172,57 +188,147 @@ Key Rules for Mermaid:
 5. Use plain text for node labels without special characters.
 6. Keep it simple: 5-10 nodes max.`,
 
-    generate_roadmap: `You are a project manager.
+  generate_roadmap: `You are a project manager.
 Generate a project roadmap with milestones and timelines.
 Output valid JSON with phases, milestones, and dependencies.`,
 };
 
+const MODELS = {
+  FAST: "llama-3.1-8b-instant",
+  QUALITY: "llama-3.3-70b-versatile",
+};
+
 export const aiService = {
-    /**
-     * Generate a project brief based on user input
-     * @param input.mode - "draft" (concise) or "polished" (detailed)
-     */
-    async generateProjectBrief(
-        input: ProjectBriefInput
-    ): Promise<LLMResponse<ProjectBriefOutput>> {
-        const mode = input.mode || "draft";
+  /**
+   * Check if AI provider is available
+   */
+  isAvailable(): boolean {
+    return groqProvider.isAvailable();
+  },
 
-        const modeInstruction = mode === "polished"
-            ? "Provide EXTREMELY detailed, professional, and comprehensive descriptions. Ensure Pain Points have quantitative data. Infer implied features."
-            : "Keep it concise. Short descriptions only. STRICTLY FOLLOW the Draft Mode JSON schema.";
+  /**
+   * Get provider name
+   */
+  getProviderName(): string {
+    return "Groq (Hybrid: 8b/70b)";
+  },
 
-        const prompt = `
-Generate a project brief for:
+  /**
+   * Generate Project Brief (Draft or Polished)
+   */
+  async generateProjectBrief(input: ProjectBriefInput): Promise<LLMResponse<ProjectBriefOutput>> {
+    if (!this.isAvailable()) {
+      throw new Error("AI provider is not configured");
+    }
 
-**Project Name:** ${input.projectName}
-**Description:** ${input.projectDescription}
-${input.targetAudience ? `**Target Audience:** ${input.targetAudience}` : ""}
-${input.budget ? `**Budget:** ${input.budget}` : ""}
-${input.timeline ? `**Timeline:** ${input.timeline}` : ""}
-${input.keyFeatures?.length ? `**Key Features:** ${input.keyFeatures.join(", ")}` : ""}
-${input.techStack?.length ? `**Technology Stack:** ${input.techStack.join(", ")}` : ""}
+    const mode = input.mode || "draft";
 
-${modeInstruction}
-    `.trim();
+    // Dynamic Model Selection
+    // Draft -> Fast (8b)
+    // Polished -> Quality (70b)
+    const targetModel = mode === "polished" ? MODELS.QUALITY : MODELS.FAST;
 
-        // Select the appropriate system prompt based on mode
-        const systemPromptRef = mode === "polished"
-            ? SYSTEM_PROMPTS.generate_project_brief_polished
-            : SYSTEM_PROMPTS.generate_project_brief_draft;
+    const taskType: AITaskType = mode === "polished"
+      ? "generate_project_brief_polished"
+      : "generate_project_brief_draft";
 
-        return groqProvider.generate<ProjectBriefOutput>(
-            prompt,
-            systemPromptRef
-        );
-    },
+    const prompt = `
+Project Name: ${input.projectName}
+Description: ${input.projectDescription}
+Target Audience: ${input.targetAudience || "Not specified"}
+Key Features: ${input.keyFeatures?.join(", ") || "Not specified"}
+Tech Stack Preference: ${input.techStack?.join(", ") || "Not specified"}
+Budget: ${input.budget || "Not specified"}
+Timeline: ${input.timeline || "Not specified"}
 
-    /**
-     * Generate architecture diagram (Mermaid DSL)
-     */
-    async generateDiagram(
-        input: DiagramInput
-    ): Promise<LLMResponse<DiagramOutput>> {
-        const prompt = `
+Generate the ${mode.toUpperCase()} PRD JSON based on the system prompt.
+`;
+
+    const response = await groqProvider.generate<ProjectBriefOutput>(
+      prompt,
+      SYSTEM_PROMPTS[taskType],
+      targetModel
+    );
+
+    // Inject metadata into the content
+    if (response.success && response.data) {
+      response.data.metadata = {
+        mode: mode,
+        version: mode === "polished" ? 1.0 : 0.1,
+        generatedAt: new Date().toISOString(),
+        cost: mode === "polished" ? 4 : 2
+      };
+    }
+
+    return response;
+  },
+
+  /**
+   * Regenerate a specific section
+   */
+  async regenerateSection(
+    fullContext: ProjectBriefOutput,
+    sectionKey: string,
+    instruction: string
+  ): Promise<LLMResponse<any>> {
+    if (!this.isAvailable()) {
+      throw new Error("AI provider is not configured");
+    }
+
+    // Check the mode of the original project
+    const projectMode = fullContext.metadata?.mode || "draft"; // Default to draft for legacy/unknown
+    const currentVersion = fullContext.metadata?.version || (projectMode === "polished" ? 1.0 : 0.1);
+
+    // Select model based on project mode (Anti-Cheat)
+    const targetModel = projectMode === "polished" ? MODELS.QUALITY : MODELS.FAST;
+
+    const prompt = `
+FULL CONTEXT (JSON):
+${JSON.stringify(fullContext, null, 2)}
+
+TARGET SECTION: "${sectionKey}"
+
+INSTRUCTION: ${instruction}
+
+CRITICAL INSTRUCTION:
+1. Analyze the 'problemStatement', 'objectives', and 'keyFeatures' from the FULL CONTEXT first.
+2. Ensure your rewrite of "${sectionKey}" aligns perfectly with the rest of the document.
+3. Do not contradict other sections.
+4. Return ONLY the JSON value for this key.
+`;
+
+    const response = await groqProvider.generate<any>(
+      prompt,
+      SYSTEM_PROMPTS["regenerate_section"],
+      targetModel
+    );
+
+    // Increment Version Metadata
+    if (response.success && response.metadata) {
+      // Calculate new version (e.g., 0.1 -> 0.2, 1.0 -> 1.1)
+      const newVersion = parseFloat((currentVersion + 0.1).toFixed(1));
+
+      // Return combined metadata (Provider Stats + Project Version)
+      return {
+        ...response,
+        metadata: {
+          ...response.metadata, // Keep model, tokensUsed
+          version: newVersion,
+          generatedAt: new Date().toISOString()
+        }
+      };
+    }
+
+    return response;
+  },
+
+  /**
+   * Generate architecture diagram (Mermaid DSL)
+   */
+  async generateDiagram(
+    input: DiagramInput
+  ): Promise<LLMResponse<DiagramOutput>> {
+    const prompt = `
 Generate a system architecture diagram for:
 
 **Project:** ${input.projectName}
@@ -233,23 +339,10 @@ Create a simple, clear architecture diagram showing main components and their re
 For the "description" field: Provide a professional architectural summary explaining WHY specific components were chosen (e.g. why load balancer, why queue, why separation). This caption will be used in an executive report.
     `.trim();
 
-        return groqProvider.generate<DiagramOutput>(
-            prompt,
-            SYSTEM_PROMPTS.generate_architecture_diagram
-        );
-    },
+    return groqProvider.generate<DiagramOutput>(
+      prompt,
+      SYSTEM_PROMPTS.generate_architecture_diagram
+    );
+  },
 
-    /**
-     * Check if AI service is available
-     */
-    isAvailable(): boolean {
-        return groqProvider.isAvailable();
-    },
-
-    /**
-     * Get provider name
-     */
-    getProviderName(): string {
-        return groqProvider.name;
-    },
 };

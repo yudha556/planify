@@ -1,82 +1,77 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { prisma } from "../config/db";
-import { env } from "../config/env";
+import { supabase } from "./supabase";
 import { AuthPayload } from "../types";
 import { AppError, ErrorCodes } from "../utils/app-error";
 
 export const authService = {
   async createUser(email: string, password: string, name?: string) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    // Supabase Auth SignUp
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+        },
+      },
     });
 
-    if (existingUser) {
-      throw new AppError(
-        "Email already registered",
-        400,
-        ErrorCodes.AUTH_EMAIL_EXISTS
-      );
+    if (error) {
+      // Map Supabase errors to AppError
+      throw new AppError(error.message, 400, ErrorCodes.AUTH_EMAIL_EXISTS);
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    if (!data.user) {
+      throw new AppError("Registration failed", 500, ErrorCodes.INTERNAL_ERROR);
+    }
 
-    return user;
+    return {
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.user_metadata?.full_name,
+      createdAt: data.user.created_at,
+      updatedAt: data.user.updated_at
+    };
   },
 
   async loginUser(email: string, password: string) {
-    const user = await prisma.user.findUnique({
-      where: { email },
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
     });
 
-    if (!user) {
+    if (error) {
       throw new AppError(
         "Invalid credentials",
         401,
         ErrorCodes.AUTH_INVALID_CREDENTIALS
       );
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new AppError(
-        "Invalid credentials",
-        401,
-        ErrorCodes.AUTH_INVALID_CREDENTIALS
-      );
-    }
-
-    const payload: AuthPayload = { userId: user.id, email: user.email };
-    const token = jwt.sign(payload, env.jwtSecret, { expiresIn: "7d" });
 
     return {
-      token,
+      token: data.session.access_token,
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.user_metadata?.full_name,
       },
     };
   },
 
   async verifyToken(token: string) {
     try {
-      const decoded = jwt.verify(token, env.jwtSecret) as AuthPayload;
-      return decoded;
+      // Verify token by fetching user
+      const { data, error } = await supabase.auth.getUser(token);
+
+      if (error || !data.user) {
+        throw new Error("Invalid token");
+      }
+
+      const payload: AuthPayload = {
+        userId: data.user.id,
+        email: data.user.email || "",
+      };
+
+      return payload;
     } catch (_error) {
       throw new AppError("Invalid token", 401, ErrorCodes.TOKEN_INVALID);
     }

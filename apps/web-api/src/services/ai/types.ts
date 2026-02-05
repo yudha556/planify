@@ -9,10 +9,12 @@
 export type AITaskType =
     | "generate_project_brief_draft"
     | "generate_project_brief_polished"
+    | "regenerate_section"
     | "generate_srs"
     | "generate_technical_overview"
     | "generate_architecture_diagram"
-    | "generate_roadmap";
+    | "generate_roadmap"
+    | "recover_json_error";
 
 // Generation mode
 export type GenerationMode = "draft" | "polished";
@@ -108,6 +110,14 @@ export interface ProjectBriefOutput {
     }[];
     assumptions?: string[];
 
+    // === Metadata ===
+    metadata?: {
+        mode: GenerationMode;
+        version: number;
+        generatedAt: string;
+        cost?: number;
+    };
+
     // === Section 10: AI Clarification Log ===
     clarificationLog: {
         date: string;
@@ -152,18 +162,19 @@ export interface LLMResponse<T = any> {
     success: boolean;
     data?: T;
     error?: string;
-    metadata?: {
+    metadata: {
         model: string;
         tokensUsed?: number;
         processingTime?: number;
         keyIndex?: number;
+        [key: string]: any; // Allow custom metadata
     };
 }
 
 // Provider interface - all LLM providers must implement this
 export interface LLMProvider {
     name: string;
-    generate<T>(prompt: string, systemPrompt?: string): Promise<LLMResponse<T>>;
+    generate<T>(prompt: string, systemPrompt?: string, model?: string): Promise<LLMResponse<T>>;
     isAvailable(): boolean;
 }
 

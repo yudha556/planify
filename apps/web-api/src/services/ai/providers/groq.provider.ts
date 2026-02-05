@@ -49,7 +49,7 @@ class GroqProvider implements LLMProvider {
      * Generate completion from Groq API
      * Handles rate limiting with automatic key rotation
      */
-    async generate<T>(prompt: string, systemPrompt?: string): Promise<LLMResponse<T>> {
+    async generate<T>(prompt: string, systemPrompt?: string, model: string = DEFAULT_MODEL): Promise<LLMResponse<T>> {
         const startTime = Date.now();
         let attempts = 0;
         const maxAttempts = groqKeyManager.getTotalKeys() + 1;
@@ -76,7 +76,7 @@ class GroqProvider implements LLMProvider {
                 messages.push({ role: "user", content: prompt });
 
                 const completion = await client.chat.completions.create({
-                    model: DEFAULT_MODEL,
+                    model: model,
                     messages,
                     temperature: 0.7,
                     max_tokens: 4096,

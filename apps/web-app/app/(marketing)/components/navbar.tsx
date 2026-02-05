@@ -1,6 +1,7 @@
 import { Card } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { FileText } from "lucide-react";
+import Link from "next/link";
 
 export default function Navbar() {
     return (
@@ -20,7 +21,10 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex flex-row gap-6 items-center w-full justify-end">
+                    <Link href="/login">
+                    
                     <Button variant="outline" size="lg" className="min-w-30 cursor-pointer hover:shadow-md hover:translate-y-1 ">Login</Button>
+                    </Link>
                     <Button variant="default" size="lg" className="min-w-30 cursor-pointer hover:shadow-md hover:translate-y-1 ">Sign Up</Button>
                 </div>
             </Card>

@@ -42,12 +42,14 @@ export const aiController = {
             const diagramCost = includeDiagram ? COIN_COSTS.DIAGRAM : 0;
             const totalCost = briefCost + diagramCost;
 
-            if (!coinService.hasEnough(userId, totalCost)) {
+            const hasEnough = await coinService.hasEnough(userId, totalCost);
+            if (!hasEnough) {
+                const balance = await coinService.getBalance(userId);
                 return res.status(402).json({
                     success: false,
-                    message: `Insufficient coins. Need ${totalCost}, have ${coinService.getBalance(userId)}`,
+                    message: `Insufficient coins. Need ${totalCost}, have ${balance}`,
                     code: AI_ERROR_CODES.INSUFFICIENT_COINS,
-                    coins: coinService.getBalance(userId),
+                    coins: balance,
                 });
             }
 
@@ -86,7 +88,8 @@ export const aiController = {
             }
 
             // Deduct coins on success
-            coinService.deduct(userId, totalCost);
+            await coinService.deduct(userId, totalCost);
+            const newBalance = await coinService.getBalance(userId);
 
             return res.status(200).json({
                 success: true,
@@ -96,7 +99,7 @@ export const aiController = {
                     ...result.metadata,
                     diagramIncluded: !!diagramData
                 },
-                coins: coinService.getBalance(userId),
+                coins: newBalance,
             });
         }
     ),
@@ -120,12 +123,14 @@ export const aiController = {
 
             // Check coins
             const cost = COIN_COSTS.DIAGRAM;
-            if (!coinService.hasEnough(userId, cost)) {
+            const hasEnough = await coinService.hasEnough(userId, cost);
+            if (!hasEnough) {
+                const balance = await coinService.getBalance(userId);
                 return res.status(402).json({
                     success: false,
-                    message: `Insufficient coins. Need ${cost}, have ${coinService.getBalance(userId)}`,
+                    message: `Insufficient coins. Need ${cost}, have ${balance}`,
                     code: AI_ERROR_CODES.INSUFFICIENT_COINS,
-                    coins: coinService.getBalance(userId),
+                    coins: balance,
                 });
             }
 
@@ -133,14 +138,15 @@ export const aiController = {
             const result = await aiService.generateDiagram(input);
 
             // Deduct coins
-            coinService.deduct(userId, cost);
+            await coinService.deduct(userId, cost);
+            const newBalance = await coinService.getBalance(userId);
 
             return res.status(200).json({
                 success: true,
                 message: "Diagram generated successfully",
                 data: result.data,
                 metadata: result.metadata,
-                coins: coinService.getBalance(userId),
+                coins: newBalance,
             });
         }
     ),
@@ -151,9 +157,10 @@ export const aiController = {
      */
     getCoins: asyncHandler(async (req: Request, res: Response): Promise<any> => {
         const userId = (req as any).user?.userId || "anonymous";
+        const coins = await coinService.getBalance(userId);
         return res.status(200).json({
             success: true,
-            coins: coinService.getBalance(userId),
+            coins: coins,
         });
     }),
 

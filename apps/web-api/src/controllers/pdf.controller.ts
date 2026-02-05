@@ -33,10 +33,13 @@ export const pdfController = {
 
             // Check coins
             const cost = COIN_COSTS.PDF;
-            if (!coinService.hasEnough(userId, cost)) {
+            const hasEnough = await coinService.hasEnough(userId, cost);
+
+            if (!hasEnough) {
+                const balance = await coinService.getBalance(userId);
                 return res.status(402).json({
                     success: false,
-                    message: `Insufficient coins. Need ${cost}, have ${coinService.getBalance(userId)}`,
+                    message: `Insufficient coins. Need ${cost}, have ${balance}`,
                     code: "INSUFFICIENT_COINS",
                 });
             }
@@ -315,13 +318,14 @@ export const pdfController = {
             const pdfBuffer = await pdfService.generatePdf(fullHtml);
 
             // Deduct coins
-            coinService.deduct(userId, cost);
+            await coinService.deduct(userId, cost);
 
             // Send response
             res.setHeader("Content-Type", "application/pdf");
             res.setHeader("Content-Disposition", `attachment; filename="${brief.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_brief.pdf"`);
             // Custom header to inform client about updated coins (difficult in binary response, so we skip or use header)
-            res.setHeader("X-Coins-Remaining", coinService.getBalance(userId).toString());
+            const newBalance = await coinService.getBalance(userId);
+            res.setHeader("X-Coins-Remaining", newBalance.toString());
 
             return res.send(pdfBuffer);
         }

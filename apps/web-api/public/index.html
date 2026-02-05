@@ -218,6 +218,10 @@
             <input type="text" id="ai-target" placeholder="Target Audience (optional)">
             <input type="text" id="ai-features" placeholder="Key Features (comma-separated, optional)">
             <input type="text" id="ai-tech" placeholder="Tech Stack (comma-separated, optional)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <input type="text" id="ai-budget" placeholder="Budget (e.g. $50k) - Optional">
+                <input type="text" id="ai-timeline" placeholder="Timeline (e.g. 3 months) - Optional">
+            </div>
             <div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
                 <label style="color: #888; font-size: 0.85rem;">Mode:</label>
                 <div class="mode-toggle">
@@ -415,6 +419,8 @@
             const targetAudience = document.getElementById('ai-target').value;
             const keyFeatures = document.getElementById('ai-features').value.split(',').map(s => s.trim()).filter(Boolean);
             const techStack = document.getElementById('ai-tech').value.split(',').map(s => s.trim()).filter(Boolean);
+            const budget = document.getElementById('ai-budget').value;
+            const timeline = document.getElementById('ai-timeline').value;
             const includeDiagram = document.getElementById('include-diagram').checked;
 
             if (!projectName || !projectDescription) {
@@ -438,6 +444,8 @@
                         targetAudience,
                         keyFeatures,
                         techStack,
+                        budget,
+                        timeline,
                         mode: currentMode,
                         includeDiagram
                     })
@@ -571,46 +579,62 @@
                 </div>
                 ` : ''}
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <!-- Objectives & Targets -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                     <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
-                        <h4 style="color: #60a5fa; margin: 0 0 0.5rem 0;">Objectives</h4>
+                        <h4 style="color: #f59e0b; margin: 0 0 0.5rem 0;">AI Clarification Log</h4>
                         <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
-                            ${brief.objectives?.map(o => `<li>${o}</li>`).join('') || '<li>N/A</li>'}
+                            ${brief.clarificationLog?.map(c => `<li><strong>${c.topic}</strong>: ${c.advice}</li>`).join('') || '<li>N/A</li>'}
                         </ul>
                     </div>
                     <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
-                        <h4 style="color: #60a5fa; margin: 0 0 0.5rem 0;">Target Audience</h4>
-                        <p style="color: #ccc; margin: 0;">${brief.targetAudience || 'N/A'}</p>
+                        <h4 style="color: #4ade80; margin: 0 0 0.5rem 0;">Success Criteria</h4>
+                         <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
+                            ${brief.successCriteria?.map(c => `<li>${c.metric ? `${c.metric}: ${c.target}` : c}</li>`).join('') || '<li>N/A</li>'}
+                        </ul>
                     </div>
                 </div>
 
+                <!-- Features & Priority -->
                 <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-                    <h4 style="color: #60a5fa; margin: 0 0 0.75rem 0;">Key Features</h4>
+                    <h4 style="color: #60a5fa; margin: 0 0 0.75rem 0;">Key Features (MoSCoW)</h4>
                     <div style="display: grid; gap: 0.5rem;">
                         ${brief.keyFeatures?.map(f => `
                             <div style="background: #1a3a5c; padding: 0.75rem; border-radius: 4px;">
-                                <strong style="color: #4ade80;">${f.name}</strong>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <strong style="color: #4ade80;">${f.name}</strong>
+                                    <span style="background: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">${f.priority || 'Should'}</span>
+                                </div>
                                 <p style="color: #aaa; margin: 0.25rem 0 0 0; font-size: 0.9rem;">${f.description}</p>
                             </div>
                         `).join('') || '<p style="color: #888;">N/A</p>'}
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
-                        <h4 style="color: #f59e0b; margin: 0 0 0.5rem 0;">Constraints</h4>
-                        <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
-                            ${brief.constraints?.map(c => `<li>${c}</li>`).join('') || '<li>N/A</li>'}
-                        </ul>
-                    </div>
-                    <div style="background: #0f3460; border-radius: 8px; padding: 1rem;">
-                        <h4 style="color: #4ade80; margin: 0 0 0.5rem 0;">Success Criteria</h4>
-                        <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
-                            ${brief.successCriteria?.map(c => `<li>${c}</li>`).join('') || '<li>N/A</li>'}
-                        </ul>
-                    </div>
-                </div>
+                 <!-- SRS Modules -->
+                 ${brief.srsModules ? `
+                 <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <h4 style="color: #fca5a5; margin: 0 0 0.75rem 0;">SRS Modules</h4>
+                    ${brief.srsModules.map(mod => `
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong style="color: #ddd;">${mod.moduleName}</strong>
+                            <ul style="color: #aaa; padding-left: 1.2rem; font-size: 0.9rem;">
+                                ${mod.requirements.map(req => `<li>[${req.id || 'REQ'}] ${req.userStory}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `).join('')}
+                 </div>` : ''}
 
+                <!-- Risks -->
+                 ${brief.risks ? `
+                 <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <h4 style="color: #f87171; margin: 0 0 0.75rem 0;">Risks & Mitigation</h4>
+                    <ul style="color: #ccc; margin: 0; padding-left: 1.2rem;">
+                         ${brief.risks.map(r => `<li><strong>${r.risk}</strong>: ${r.mitigation}</li>`).join('')}
+                    </ul>
+                 </div>` : ''}
+
+                <!-- Tech Stack -->
                 ${brief.recommendedTechStack?.length ? `
                 <div style="background: #0f3460; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
                     <h4 style="color: #a78bfa; margin: 0 0 0.75rem 0;">Recommended Tech Stack</h4>

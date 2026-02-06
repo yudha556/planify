@@ -11,6 +11,8 @@ requiredEnvVars.forEach((envVar) => {
 export const env = {
   port: parseInt(process.env.PORT || "4000", 10),
   jwtSecret: process.env.JWT_SECRET || "your-secret-key",
-  databaseUrl: process.env.DATABASE_URL || "file:./prisma/dev.db",
+  databaseUrl: process.env.DATABASE_URL || "file:./dev.db",
   nodeEnv: process.env.NODE_ENV || "development",
+  supabaseUrl: process.env.SUPABASE_URL || "",
+  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
 };

@@ -25,7 +25,11 @@ export default function Navbar() {
                     
                     <Button variant="outline" size="lg" className="min-w-30 cursor-pointer hover:shadow-md hover:translate-y-1 ">Login</Button>
                     </Link>
+
+                    <Link href="/register">
+                    
                     <Button variant="default" size="lg" className="min-w-30 cursor-pointer hover:shadow-md hover:translate-y-1 ">Sign Up</Button>
+                    </Link>
                 </div>
             </Card>
         </div>

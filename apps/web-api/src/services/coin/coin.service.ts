@@ -1,9 +1,4 @@
-/**
- * ============================================
- * COIN SERVICE
- * In-memory coin management for testing
- * ============================================
- */
+import { supabase } from "../../config/supabase";
 
 // Coin costs
 export const COIN_COSTS = {
@@ -13,55 +8,67 @@ export const COIN_COSTS = {
     PDF: 1,
 } as const;
 
-// In-memory coin store (per user)
-const userCoins = new Map<string, number>();
-
-// Default starting coins
-const DEFAULT_COINS = 10;
-
 export const coinService = {
     /**
-     * Get user's coin balance
+     * Get user's coin balance from Supabase
      */
-    getBalance(userId: string): number {
-        if (!userCoins.has(userId)) {
-            userCoins.set(userId, DEFAULT_COINS);
+    async getBalance(userId: string): Promise<number> {
+        try {
+            const { data, error } = await supabase
+                .from("profiles")
+                .select("credits")
+                .eq("id", userId)
+                .single();
+
+            if (error || !data) {
+                // If profile not found, return 0 (or default if you want)
+                // console.warn("Coin fetch failed or profile missing:", error?.message);
+                return 0;
+            }
+
+            return data.credits ?? 0;
+        } catch (error) {
+            console.error("Supabase error:", error);
+            return 0;
         }
-        return userCoins.get(userId)!;
     },
 
     /**
      * Check if user has enough coins
      */
-    hasEnough(userId: string, amount: number): boolean {
-        return this.getBalance(userId) >= amount;
+    async hasEnough(userId: string, amount: number): Promise<boolean> {
+        const balance = await this.getBalance(userId);
+        return balance >= amount;
     },
 
     /**
      * Deduct coins from user
-     * @returns true if successful, false if insufficient
      */
-    deduct(userId: string, amount: number): boolean {
-        const balance = this.getBalance(userId);
-        if (balance < amount) {
-            return false;
+    async deduct(userId: string, amount: number): Promise<boolean> {
+        // Optimistic check
+        const hasEnough = await this.hasEnough(userId, amount);
+        if (!hasEnough) return false;
+
+        // Try RPC first (Atomic)
+        const { error } = await supabase.rpc("deduct_credits", {
+            user_id: userId,
+            amount: amount
+        });
+
+        if (error) {
+            console.warn("RPC deduct_credits failed, trying manual update", error.message);
+            // Fallback: Manual update (Race condition possible but acceptable for MVP)
+            const currentBalance = await this.getBalance(userId);
+            if (currentBalance < amount) return false;
+
+            const { error: updateError } = await supabase
+                .from("profiles")
+                .update({ credits: currentBalance - amount })
+                .eq("id", userId);
+
+            return !updateError;
         }
-        userCoins.set(userId, balance - amount);
+
         return true;
-    },
-
-    /**
-     * Add coins to user
-     */
-    add(userId: string, amount: number): void {
-        const balance = this.getBalance(userId);
-        userCoins.set(userId, balance + amount);
-    },
-
-    /**
-     * Reset user's coins to default
-     */
-    reset(userId: string): void {
-        userCoins.set(userId, DEFAULT_COINS);
     },
 };

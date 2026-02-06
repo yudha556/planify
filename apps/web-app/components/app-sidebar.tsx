@@ -1,21 +1,20 @@
 "use client"
 
 import * as React from "react"
+import { usePathname } from "next/navigation"
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  LayoutDashboard,
+  FolderPlus,
+  Folder,
+  History,
+  CreditCard,
+  Settings,
+  FileText,
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
-import { NavProjects } from "./nav-projects"
 import { NavUser } from "./nav-user"
 import { TeamSwitcher } from "./team-switcher"
 import {
@@ -26,7 +25,6 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 
-// This is sample data.
 const data = {
   user: {
     name: "shadcn",
@@ -35,136 +33,81 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
+      name: "Planify Inc",
+      logo: FileText,
       plan: "Enterprise",
     },
     {
-      name: "Acme Corp.",
+      name: "Planify Corp.",
       logo: AudioWaveform,
       plan: "Startup",
     },
     {
-      name: "Evil Corp.",
+      name: "Planify Corp.",
       logo: Command,
       plan: "Free",
     },
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboard,
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "New Project",
+      url: "/newProject",
+      icon: FolderPlus,
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      title: "My Project",
+      url: "/myProject",
+      icon: Folder,
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
+      title: "History",
+      url: "/histories",
+      icon: History,
     },
   ],
-  projects: [
+  navSettings: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
+      title: "Billing & Coins",
+      url: "/billing",
+      icon: CreditCard,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      title: "Preference",
+      url: "/setting",
+      icon: Settings,
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname()
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain 
+          label="Main" 
+          items={data.navMain.map((item) => ({
+            ...item,
+            isActive: pathname === item.url, 
+          }))} 
+        />
+        
+        <NavMain 
+          label="Settings" 
+          items={data.navSettings.map((item) => ({
+            ...item,
+            isActive: pathname === item.url,
+          }))} 
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

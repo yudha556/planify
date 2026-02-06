@@ -14,7 +14,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.53 0.22 264); 
+  --primary: oklch(0.53 0.22 264);
   --primary-foreground: oklch(0.98 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -126,7 +126,6 @@
   }
 }
 
-
 .custom-scroll::-webkit-scrollbar {
   width: 8px;
 }
@@ -180,4 +179,235 @@
   }
 }
 
+/* Responsive adjustments for Hero component (non-visual, layout/size only) */
+/* Breakpoints: <=375, 376-480, 481-768, 769-1024, 1025-1440, >=1441 */
 
+/* Mobile small: <= 375px */
+@media (max-width: 375px) {
+  .planify-hero {
+    padding: 2rem 1rem !important;
+    gap: 1rem !important;
+  }
+
+  .planify-hero h1 {
+    font-size: 1.6rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .planify-hero h3,
+  .planify-hero p {
+    font-size: 0.95rem !important;
+  }
+
+  .hero-columns {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .planify-hero .max-w-xl,
+  .planify-hero .max-w-4xl,
+  .planify-hero .max-w-sm,
+  .planify-hero .max-w-xs {
+    max-width: 100% !important;
+  }
+
+  .planify-hero .min-w-60 {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .planify-hero .flex-row.gap-10 {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    align-items: flex-start !important;
+  }
+}
+
+/* Mobile normal: 376px - 480px */
+@media (min-width: 376px) and (max-width: 480px) {
+  .planify-hero {
+    padding: 2.5rem 1.25rem !important;
+    gap: 1.25rem !important;
+  }
+
+  .planify-hero h1 {
+    font-size: 1.9rem !important;
+    line-height: 1.18 !important;
+  }
+
+  .hero-columns {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .planify-hero .min-w-60 {
+    min-width: 0 !important;
+    width: auto !important;
+  }
+}
+
+/* Tablet portrait: 481px - 768px */
+@media (min-width: 481px) and (max-width: 768px) {
+  .planify-hero {
+    padding: 3rem 1.75rem !important;
+    gap: 1.5rem !important;
+  }
+
+  .planify-hero h1 {
+    font-size: 2.25rem !important;
+  }
+
+  .hero-columns {
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+  }
+
+  .planify-hero .max-w-xl {
+    max-width: 90% !important;
+  }
+}
+
+/* Tablet landscape: 769px - 1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .planify-hero {
+    padding: 4rem 2.5rem !important;
+    gap: 1.75rem !important;
+  }
+
+  .planify-hero h1 {
+    font-size: 2.75rem !important;
+  }
+
+  .hero-columns {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+  }
+
+  .planify-hero .max-w-xl {
+    max-width: 42rem !important;
+  }
+}
+
+/* Desktop: 1025px - 1440px */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .planify-hero {
+    padding: 5rem 3.5rem !important;
+    gap: 2rem !important;
+  }
+
+  .planify-hero h1 {
+    font-size: 3rem !important;
+  }
+
+  .hero-columns {
+    flex-direction: row !important;
+    gap: 3.5rem !important;
+  }
+}
+
+/* Large screen: >= 1441px */
+@media (min-width: 1441px) {
+  .planify-hero {
+    padding: 5.5rem 4rem !important;
+    gap: 2.5rem !important;
+  }
+
+  .planify-hero h1 {
+    font-size: 3.25rem !important;
+  }
+
+  .hero-columns {
+    flex-direction: row !important;
+    gap: 4rem !important;
+  }
+}
+
+/* Responsive adjustments for Navbar component (layout only) */
+@media (max-width: 375px) {
+  .planify-navbar-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 1rem !important;
+  }
+
+  .planify-navbar .navbar-left,
+  .planify-navbar .navbar-center,
+  .planify-navbar .navbar-right {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .planify-navbar .navbar-center {
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  .planify-navbar .navbar-center a {
+    font-size: 0.9rem !important;
+    padding: 0.25rem 0.35rem !important;
+  }
+
+  .planify-navbar .navbar-right {
+    display: flex !important;
+    gap: 0.5rem !important;
+    justify-content: flex-start !important;
+  }
+
+  .planify-navbar .navbar-right .min-w-30 {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 376px) and (max-width: 480px) {
+  .planify-navbar-card {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+  }
+
+  .planify-navbar .navbar-center {
+    gap: 0.75rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  .planify-navbar .navbar-right .min-w-30 {
+    min-width: 0 !important;
+    width: auto !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .planify-navbar-card {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 1.5rem 2rem !important;
+  }
+
+  .planify-navbar .navbar-center {
+    gap: 1rem !important;
+  }
+
+  .planify-navbar .navbar-right .min-w-30 {
+    min-width: 8rem !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .planify-navbar-card {
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 1.5rem 3.5rem !important;
+  }
+
+  .planify-navbar .navbar-center {
+    gap: 3rem !important;
+  }
+
+  .planify-navbar .navbar-right .min-w-30 {
+    min-width: 7.5rem !important;
+  }
+}

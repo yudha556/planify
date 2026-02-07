@@ -34,7 +34,10 @@ export default function RecentProject() {
       </div>
 
       <div className=" items-center justify-between grid grid-cols-3  gap-6">
-        <Card className=" w-full">
+        <Button 
+        onClick={() => router.push("/newProject")}
+        variant={"outline"} 
+        className="w-full h-full p-4 cursor-pointer bg-white hover:shadow-md hover:translate-y-1 transition-all duration-200">
           <Empty className="py-1">
             <EmptyHeader>
               <EmptyMedia
@@ -49,17 +52,17 @@ export default function RecentProject() {
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <Button
+              {/* <Button
                 onClick={() => router.push("/newProject")}
                 variant={"outline"}
                 size={"lg"}
                 className="cursor-pointer hover:shadow-md hover:translate-y-1"
               >
                 Create Project
-              </Button>
+              </Button> */}
             </EmptyContent>
           </Empty>
-        </Card>
+        </Button>
 
         <ProjectProgress />
         <ProjectProgress />

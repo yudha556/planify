@@ -17,10 +17,14 @@ export type AITaskType =
 // Generation mode
 export type GenerationMode = "draft" | "polished";
 
+// Project types for multi-domain support
+export type ProjectType = "webapp" | "mobile" | "research" | "enterprise";
+
 // Input for project brief generation
 export interface ProjectBriefInput {
     projectName: string;
     projectDescription: string;
+    projectType?: ProjectType; // NEW: Determines prompt strategy
     targetAudience?: string;
     keyFeatures?: string[];
     techStack?: string[];
@@ -121,12 +125,48 @@ export interface ProjectBriefOutput {
         description: string;
         diagramType: string;
     };
+
+    // === Research Document Fields (Optional) ===
+    abstract?: string;
+    researchQuestions?: string[] | { question: string; type?: string }[];
+    methodology?: {
+        approach: string;
+        population?: string;
+        dataCollection?: {
+            methods?: string[];
+            instruments?: string[];
+        };
+        dataAnalysis?: {
+            techniques?: string[];
+            tools?: string[];
+            software?: string | string[];
+        };
+    };
+    expectedOutcomes?: string[] | { outcome: string; indicator?: string }[];
+    timeline?: {
+        phases?: {
+            name?: string;
+            phase?: string;
+            duration?: string;
+            weeks?: string;
+            activities?: string[] | string;
+            description?: string;
+        }[];
+    };
+    variables?: {
+        name?: string;
+        variable?: string;
+        type?: string;
+        indicators?: string[] | string;
+    }[];
+    hypotheses?: string[] | { hypothesis?: string; statement?: string }[];
 }
 
 // Input for diagram generation
 export interface DiagramInput {
     projectName: string;
     projectDescription: string;
+    projectType?: ProjectType;
     techStack?: string[];
 }
 
@@ -155,6 +195,8 @@ export interface LLMResponse<T = any> {
     metadata?: {
         model: string;
         tokensUsed?: number;
+        inputTokens?: number;
+        outputTokens?: number;
         processingTime?: number;
         keyIndex?: number;
     };

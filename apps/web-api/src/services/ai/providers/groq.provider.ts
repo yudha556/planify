@@ -110,6 +110,8 @@ class GroqProvider implements LLMProvider {
                     metadata: {
                         model: DEFAULT_MODEL,
                         tokensUsed: completion.usage?.total_tokens,
+                        inputTokens: completion.usage?.prompt_tokens,
+                        outputTokens: completion.usage?.completion_tokens,
                         processingTime: Date.now() - startTime,
                         keyIndex: groqKeyManager.getCurrentKeyIndex(),
                     },

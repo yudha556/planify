@@ -90,8 +90,8 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer flex flex-row">
-              <Link href="/" className="flex flex-row items-center gap-3">
+            <DropdownMenuItem className="cursor-pointer flex flex-row bg-red-100 text-red-600">
+              <Link href="/marketing" className="flex flex-row items-center gap-3">
                 <LogOut />
                 Log out
               </Link>

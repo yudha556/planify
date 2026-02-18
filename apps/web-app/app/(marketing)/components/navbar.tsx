@@ -1,6 +1,6 @@
 import { Card } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
-import { FileText } from "lucide-react";
+import { Layers2 } from "lucide-react";
 import Link from "next/link";
 
 export default function Navbar() {
@@ -9,7 +9,7 @@ export default function Navbar() {
             <Card className="w-full shadow-md rounded-none flex flex-row justify-between items-center px-14 py-4">
                 <div className="flex flex-row gap-4 items-center w-full">
                     <div className="w-10 h-10 items-center justify-center flex rounded-md bg-blue-600">
-                        <FileText className="text-white" />
+                        <Layers2 className="text-white" />
                     </div>
                     <h1 className="text-2xl font-bold">Planify</h1>
                 </div>

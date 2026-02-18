@@ -11,7 +11,7 @@ import {
   History,
   CreditCard,
   Settings,
-  FileText,
+  Layers2,
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
@@ -34,7 +34,7 @@ const data = {
   teams: [
     {
       name: "Planify Inc",
-      logo: FileText,
+      logo: Layers2,
       plan: "Enterprise",
     },
     {

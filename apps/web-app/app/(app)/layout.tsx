@@ -63,6 +63,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const segments = pathname.split("/").filter((item) => item !== "");
 
+  const isNewProject = pathname.includes("/newProject");
+
   const formatLabel = (text: string) => {
     return text
       .replace(/-/g, " ")
@@ -75,7 +77,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
 
         <SidebarInset>
-          <header className="sticky top-0 z-10 bg-background/10 backdrop-blur flex h-16 shrink-0 items-center gap-2 px-4 shadow-md">
+          <header className={`sticky top-0 z-10 bg-background/10 backdrop-blur flex h-16 shrink-0 items-center gap-2 px-4 shadow-md `}>
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4" />
 
@@ -122,7 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Link href="/newProject">
                 <Button
                   variant="default"
-                  className="flex flex-row items-center cursor-pointer hover:shadow-md hover:translate-y-1"
+                  className={`flex flex-row items-center cursor-pointer hover:shadow-md hover:translate-y-1 ${isNewProject ? "hidden" : ""}`}
                 >
                   <Plus className="text-white size-4" />
                   <p className="text-white text-md">New Project</p>
@@ -195,7 +197,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <main className="flex flex-1 flex-col px-6 py-8 bg-accent/20">{children}</main>
+          <main
+            className={`flex flex-1 flex-col bg-accent/20 ${
+              isNewProject ? "" : "px-6 py-8"
+            }`}
+          >
+            {children}
+          </main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

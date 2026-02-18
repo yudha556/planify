@@ -23,7 +23,7 @@ export const aiController = {
      */
     generateProjectBrief: asyncHandler(
         async (req: Request, res: Response): Promise<any> => {
-            const { projectName, projectDescription, targetAudience, keyFeatures, techStack, mode, includeDiagram } =
+            const { projectName, projectDescription, projectType, targetAudience, keyFeatures, techStack, mode, includeDiagram } =
                 req.body;
             const userId = (req as any).user?.userId || "anonymous";
 
@@ -56,6 +56,7 @@ export const aiController = {
             const input: ProjectBriefInput = {
                 projectName,
                 projectDescription,
+                projectType: projectType || "webapp",
                 targetAudience,
                 keyFeatures,
                 techStack,
@@ -76,8 +77,8 @@ export const aiController = {
                 const diagramInput: DiagramInput = {
                     projectName,
                     projectDescription,
-                    techStack: briefData.recommendedTechStack.map(t => t.technology) // Use recommended tech if available? Or input?
-                    // Let's prefer the output tech stack as it's more refined.
+                    projectType: projectType || "webapp",
+                    techStack: briefData.recommendedTechStack?.map(t => t.technology) || techStack || []
                 };
 
                 const diagramResult = await aiService.generateDiagram(diagramInput);

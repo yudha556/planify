@@ -32,7 +32,7 @@ export function NavMain({
               asChild
               isActive={item.isActive}
               tooltip={item.title}
-              className="data-[active=true]:bg-white data-[active=true]:text-blue-600 data-[active=true]:shadow-md"
+              className="data-[active=true]:bg-white data-[active=true]:text-blue-600 data-[active=true]:shadow-md h-10"
             >
               <a href={item.url}>
                 <item.icon />

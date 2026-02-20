@@ -51,7 +51,7 @@ export function ProjectInfoStep({ setStep }: Props) {
     },
   ];
   return (
-    <div className="space-y-8 w-full flex flex-col justify-center">
+    <div className="space-y-8 w-full flex flex-col justify-center mb-25">
       <div className="flex flex-col gap-3 mb-10">
         <h2 className="text-xl font-semibold">Basic Project Information</h2>
         <p className="text-sm text-gray-500">
@@ -80,25 +80,7 @@ export function ProjectInfoStep({ setStep }: Props) {
         <textarea
           id="project_description"
           placeholder="Type your short description"
-          className="
-      w-full
-      min-h-[112px]
-      px-3 py-2
-      text-sm
-      rounded-md
-      border border-input
-      bg-background
-      shadow-sm
-      focus:outline-none
-      focus:ring-1
-      focus:ring-blue-500
-      focus:border-blue-500
-      focus:shadow-blue-400
-      focus:shadow
-      disabled:opacity-50
-      disabled:cursor-not-allowed
-      resize-none
-    "
+          className="w-full min-h-28 px-3 py-2 text-sm rounded-md border border-input bg-background shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:shadow-blue-400 focus:shadow disabled:opacity-50 disabled:cursor-not-allowed resize-none "
         />
         <FieldDescription className="text-sm text-muted-foreground">
           This summary will appear in the the introduction of your PRD
@@ -138,7 +120,12 @@ export function ProjectInfoStep({ setStep }: Props) {
 
       <Separator orientation="horizontal" className="h-0.5 text-gray-900" />
 
-      <div className="flex justify-end">
+      <div className="flex flex-row justify-between items-center">
+        <Button
+          onClick={() => setStep(2)}
+          variant={"outline"}
+          className="flex flex-row gap-4 items-center text-sm px-5 py-5 hover:translate-y-1 hover:shadow-md cursor-pointer "
+        >Cancel</Button>
         <Button
           onClick={() => setStep(3)}
           disabled={!selectStyle}

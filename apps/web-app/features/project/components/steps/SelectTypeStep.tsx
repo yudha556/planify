@@ -34,7 +34,7 @@ export function SelectTypeStep({ setType, setStep }: Props) {
   ];
 
   return (
-    <div className="space-y-10 max-w-2xl">
+    <div className="space-y-10 w-full mb-[100px]">
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">Choose Project Type</h2>
         <p className="text-sm text-muted-foreground">

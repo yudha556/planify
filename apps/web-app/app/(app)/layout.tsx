@@ -76,8 +76,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <AppSidebar />
 
-        <SidebarInset>
-          <header className={`sticky top-0 z-10 bg-background/10 backdrop-blur flex h-16 shrink-0 items-center gap-2 px-4 shadow-md `}>
+        <SidebarInset
+          className={
+            isNewProject ? "h-screen flex flex-col overflow-hidden" : ""
+          }
+        >
+          <header
+            className={`
+    ${isNewProject ? "sticky top-0 z-10" : "sticky top-0 z-10"}
+    bg-background/10 backdrop-blur
+    flex h-16 shrink-0 items-center gap-2 px-4 shadow-md
+  `}
+          >
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="h-4" />
 
@@ -198,8 +208,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </header>
 
           <main
-            className={`flex flex-1 flex-col bg-accent/20 ${
-              isNewProject ? "" : "px-6 py-8"
+            className={`bg-accent/20 ${
+              isNewProject
+                ? "flex-1 overflow-hidden"
+                : "flex flex-1 flex-col px-6 py-8"
             }`}
           >
             {children}

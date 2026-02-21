@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Card } from "@workspace/ui/components/card";
 import { Field, FieldLabel } from "@workspace/ui/components/field";
 import { Input } from "@workspace/ui/components/input";
@@ -9,13 +8,16 @@ import { Separator } from "@workspace/ui/components/separator";
 import { ArrowRight, Cpu, Goal, ListTodo } from "lucide-react";
 import { TagInput } from "./components/tagInput";
 import { Button } from "@workspace/ui/components/button";
+import type { WebAppFormData } from "../../../types";
 
 interface Props {
   setStep: (step: number) => void;
+  formData: WebAppFormData;
+  updateField: <K extends keyof WebAppFormData>(field: K, value: WebAppFormData[K]) => void;
+  canProceedToReview: boolean;
 }
 
-export function DetailsScopeStep({ setStep }: Props) {
-  const [techStack, setTechStack] = useState<string[]>([]);
+export function DetailsScopeStep({ setStep, formData, updateField, canProceedToReview }: Props) {
   return (
     <div className="space-y-4 mb-25">
       <div className="flex flex-col gap-2">
@@ -42,6 +44,8 @@ export function DetailsScopeStep({ setStep }: Props) {
             id="audience"
             placeholder="e.g. Warehouse Managers, Supply Chain Officers"
             className="h-10 bg-white shadow-md border-gray-300"
+            value={formData.targetAudience}
+            onChange={(e) => updateField("targetAudience", e.target.value)}
           />
         </Field>
 
@@ -51,6 +55,8 @@ export function DetailsScopeStep({ setStep }: Props) {
             id="metric"
             placeholder="e.g. Reduce inventory counting time by 40%"
             className="h-10 bg-white shadow-md border border-gray-300"
+            value={formData.primaryMetric}
+            onChange={(e) => updateField("primaryMetric", e.target.value)}
           />
         </Field>
       </Card>
@@ -71,6 +77,8 @@ export function DetailsScopeStep({ setStep }: Props) {
             id="feature"
             placeholder="Type your short description"
             className="w-full min-h-28 px-3 py-2 text-sm rounded-md border border-input bg-background shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 focus:shadow-blue-400 focus:shadow disabled:opacity-50 disabled:cursor-not-allowed resize-none "
+            value={formData.keyFeatures}
+            onChange={(e) => updateField("keyFeatures", e.target.value)}
           />
         </Field>
 
@@ -80,6 +88,8 @@ export function DetailsScopeStep({ setStep }: Props) {
             id="out_of_scope"
             placeholder="e.g. Mobile App, Office mode support"
             className="h-10 bg-white shadow-md border border-gray-300"
+            value={formData.outOfScope}
+            onChange={(e) => updateField("outOfScope", e.target.value)}
           />
         </Field>
       </Card>
@@ -97,8 +107,8 @@ export function DetailsScopeStep({ setStep }: Props) {
         <Field>
           <Label>Tech Stack</Label>
           <TagInput
-            value={techStack}
-            onChange={setTechStack}
+            value={formData.techStack}
+            onChange={(tags) => updateField("techStack", tags)}
             placeholder="Add technology..."
           />
         </Field>
@@ -109,6 +119,8 @@ export function DetailsScopeStep({ setStep }: Props) {
             id="integration_requirements"
             placeholder="e.g. Stripe Payment Gateway, Google Maps API"
             className="h-10 bg-white shadow-md border border-gray-300"
+            value={formData.integrationRequirements}
+            onChange={(e) => updateField("integrationRequirements", e.target.value)}
           />
         </Field>
       </Card>
@@ -120,19 +132,21 @@ export function DetailsScopeStep({ setStep }: Props) {
             id="know_constrain"
             placeholder="e.g. Must run on legacy IE11 browser, 3 month timeline"
             className="h-10 bg-white shadow-md border border-gray-300"
+            value={formData.knownConstraints}
+            onChange={(e) => updateField("knownConstraints", e.target.value)}
           />
         </Field>
       </Card>
 
-   <div className="flex flex-row justify-between items-center">
+      <div className="flex flex-row justify-between items-center">
         <Button
-          onClick={() => setStep(3)}
+          onClick={() => setStep(2)}
           variant={"outline"}
           className="flex flex-row gap-4 items-center text-sm px-5 py-5 hover:translate-y-1 hover:shadow-md cursor-pointer "
         >Back</Button>
         <Button
           onClick={() => setStep(4)}
-          // disabled={!selectStyle}
+          // disabled={!canProceedToReview}
           className="flex flex-row gap-4 items-center text-sm px-5 py-5 hover:translate-y-1 hover:shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue to Review

@@ -8,7 +8,7 @@ interface UseGenerateProjectReturn {
     isLoading: boolean
     error: string | null
     result: GenerateProjectResponse | null
-    generate: (formData: WebAppFormData, mode?: "draft" | "polished", includeDiagram?: boolean) => Promise<void>
+    generate: (formData: WebAppFormData, includeDiagram?: boolean) => Promise<void>
     clearError: () => void
     clearResult: () => void
 }
@@ -21,7 +21,6 @@ export function useGenerateProject(): UseGenerateProjectReturn {
     const generate = useCallback(
         async (
             formData: WebAppFormData,
-            mode: "draft" | "polished" = "draft",
             includeDiagram: boolean = false
         ) => {
             setIsLoading(true)
@@ -32,10 +31,16 @@ export function useGenerateProject(): UseGenerateProjectReturn {
                     projectName: formData.projectName,
                     projectDescription: formData.projectDescription,
                     projectType: formData.projectType || "webapp",
+                    documentStyle: formData.documentStyle || "professional",
+                    outputLanguage: formData.outputLanguage || "english",
+                    projectStatus: formData.projectStatus || undefined,
                     targetAudience: formData.targetAudience || undefined,
+                    primaryMetric: formData.primaryMetric || undefined,
                     keyFeatures: formData.keyFeatures || undefined,
                     techStack: formData.techStack.length > 0 ? formData.techStack : undefined,
-                    mode,
+                    outOfScope: formData.outOfScope || undefined,
+                    integrationRequirements: formData.integrationRequirements || undefined,
+                    knownConstraints: formData.knownConstraints || undefined,
                     includeDiagram,
                 }
 

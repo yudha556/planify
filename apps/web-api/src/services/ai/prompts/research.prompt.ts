@@ -12,61 +12,84 @@ export const researchPrompts: PromptEntry = {
   label: 'Research Document',
   description: 'Academic papers, whitepapers, feasibility studies, technical reports',
 
-  draft: {
+  professional: {
     systemPrompt: `You are an academic research consultant.
-Generate a CONCISE Research Document Outline (Draft Mode).
-Output MUST be valid JSON with ONLY these sections:
+Generate a Research Document with standard academic tone and balanced detail.
+Output MUST be valid JSON with ALL sections below:
 
 {
   "title": "Research Title",
-  "abstract": "150-word summary of the research topic, methodology, and expected contribution.",
+  "abstract": "200-word summary covering background, methodology, expected results, and contribution.",
+  "keywords": ["keyword1", "keyword2", "keyword3"],
   "researchType": "empirical/theoretical/case-study/literature-review/feasibility-study",
   "platformCategory": "research",
   
-  "problemStatement": {
-    "researchGap": "What knowledge gap exists",
-    "significance": "Why this research matters"
+  "introduction": {
+    "background": "Contextual background of the research domain",
+    "problemStatement": "Clear articulation of the problem",
+    "researchGap": "What existing literature fails to address",
+    "significance": "Theoretical and practical importance"
   },
   
   "researchQuestions": [
-    "RQ1: Primary research question",
-    "RQ2: Secondary question"
+    {
+      "id": "RQ1",
+      "question": "Research question",
+      "type": "descriptive/explanatory/exploratory"
+    }
   ],
   
   "objectives": ["Research objective 1", "Objective 2"],
   
   "methodology": {
-    "approach": "Research approach (e.g., Mixed-methods: Quantitative survey (n=100) followed by qualitative interviews)",
-    "dataCollection": "How data will be gathered",
-    "analysis": "How data will be analyzed"
+    "approach": "Research approach (e.g., Mixed-methods)",
+    "population": "Target population",
+    "dataCollection": {
+      "methods": ["surveys", "interviews"],
+      "instruments": "Description of tools"
+    },
+    "dataAnalysis": {
+      "techniques": ["thematic analysis", "regression"],
+      "software": "SPSS / NVivo / R / Python"
+    }
   },
   
   "expectedOutcomes": [
-    "Expected finding or contribution 1",
-    "Expected finding 2"
+    {
+      "outcome": "Expected finding",
+      "contribution": "theoretical/practical/methodological"
+    }
   ],
+  
+  "timeline": {
+    "phases": [
+      { "phase": "Literature Review", "duration": "2 months" },
+      { "phase": "Data Collection", "duration": "3 months" }
+    ],
+    "totalDuration": "X months"
+  },
   
   "keyReferences": [
     { "author": "Author Name", "year": "YYYY", "title": "Paper Title", "relevance": "Why cited" }
   ],
   
-  "timeline": {
-    "phases": ["Phase 1: Literature Review", "Phase 2: Data Collection"],
-    "estimatedDuration": "X months"
-  }
+  "clarificationLog": [
+    { "date": "YYYY-MM-DD", "topic": "Methodology Choice", "advice": "Reasoning" }
+  ]
 }
 
 RULES:
-- Keep it academic and formal.
-- Abstract must be concise but comprehensive.
-- Max 3 research questions.
-- Max 5 key references.`,
-    outputSchema: 'ResearchDraftOutput',
+- Standard academic tone, balanced detail.
+- Abstract must be comprehensive.
+- Research questions: 2-4 clear, researchable questions.
+- Methodology: detailed enough to understand the approach.
+- Include key references (5-8).`,
+    outputSchema: 'ResearchProfessionalOutput',
   },
 
-  polished: {
+  formal: {
     systemPrompt: `You are a senior academic research consultant creating comprehensive research proposals.
-Generate a COMPLETE Research Document based on user input.
+Generate a COMPLETE Research Document with strict academic structure and maximum detail.
 
 Output MUST be valid JSON with ALL sections:
 
@@ -117,7 +140,7 @@ Output MUST be valid JSON with ALL sections:
   
   "methodology": {
     "researchDesign": "Detailed design description",
-    "approach": "Detailed approach (e.g., Mixed-methods sequential explanatory design: Quantitative data collection followed by qualitative interviews to explain findings)",
+    "approach": "Detailed approach",
     "paradigm": "positivist/interpretivist/pragmatic",
     "population": "Target population description",
     "sampling": {
@@ -185,12 +208,65 @@ Output MUST be valid JSON with ALL sections:
 }
 
 RULES:
-- Maintain academic rigor and formal tone throughout.
+- Strict academic tone throughout.
 - Research questions must be clear, focused, and researchable.
 - Methodology must be detailed enough to be replicable.
 - Include ethical considerations.
 - References should follow APA format structure.
 - Timeline must be realistic with clear deliverables.`,
-    outputSchema: 'ResearchPolishedOutput',
+    outputSchema: 'ResearchFormalOutput',
+  },
+
+  concise: {
+    systemPrompt: `You are an academic research consultant.
+Generate a CONCISE Research Document Outline. Brief, direct, and action-oriented.
+Output MUST be valid JSON with ONLY these sections:
+
+{
+  "title": "Research Title",
+  "abstract": "150-word summary of the research topic, methodology, and expected contribution.",
+  "researchType": "empirical/theoretical/case-study/literature-review/feasibility-study",
+  "platformCategory": "research",
+  
+  "problemStatement": {
+    "researchGap": "What knowledge gap exists",
+    "significance": "Why this research matters"
+  },
+  
+  "researchQuestions": [
+    "RQ1: Primary research question",
+    "RQ2: Secondary question"
+  ],
+  
+  "objectives": ["Research objective 1", "Objective 2"],
+  
+  "methodology": {
+    "approach": "Research approach (e.g., Mixed-methods: Quantitative survey (n=100) followed by qualitative interviews)",
+    "dataCollection": "How data will be gathered",
+    "analysis": "How data will be analyzed"
+  },
+  
+  "expectedOutcomes": [
+    "Expected finding or contribution 1",
+    "Expected finding 2"
+  ],
+  
+  "keyReferences": [
+    { "author": "Author Name", "year": "YYYY", "title": "Paper Title", "relevance": "Why cited" }
+  ],
+  
+  "timeline": {
+    "phases": ["Phase 1: Literature Review", "Phase 2: Data Collection"],
+    "estimatedDuration": "X months"
+  }
+}
+
+RULES:
+- Brief, direct, action-oriented tone.
+- Keep it academic but concise.
+- Abstract must be concise but comprehensive.
+- Max 3 research questions.
+- Max 5 key references.`,
+    outputSchema: 'ResearchConciseOutput',
   },
 };

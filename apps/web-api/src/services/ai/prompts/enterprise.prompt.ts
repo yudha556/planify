@@ -8,28 +8,28 @@
 import { PromptEntry } from './index';
 
 export const enterprisePrompts: PromptEntry = {
-    type: 'enterprise',
-    label: 'Enterprise System',
-    description: 'ERP, CRM, Supply Chain, Internal Tools',
+  type: 'enterprise',
+  label: 'Enterprise System',
+  description: 'ERP, CRM, Supply Chain, Internal Tools',
 
-    draft: {
-        systemPrompt: `You are an enterprise solutions architect.
-Generate a CONCISE Project Requirements Document (Draft Mode) for an Enterprise System.
-Output MUST be valid JSON with ONLY these sections (Standard 10-point format):
+  professional: {
+    systemPrompt: `You are an enterprise solutions architect.
+Generate a Project Requirements Document with a standard business tone and balanced detail for an Enterprise System.
+Output MUST be valid JSON with ALL sections below:
 
 {
   "title": "Project title",
-  "overview": "Start immediately with 'An enterprise [system type] designed for [organization type] that enables [core value]'. No marketing fluff.",
+  "overview": "Start immediately with 'An enterprise [system type] designed for [organization type] that enables [core value]'.",
   "targetAudience": {
     "primary": "Internal stakeholders / Employees",
-    "secondary": "Management / External partners",
-    "admin": "System Administrators"
+    "secondary": "Management / Executives",
+    "admin": "IT Admin / DevOps"
   },
   "platformCategory": "web",
   
   "problemStatement": {
-    "painPoints": ["3 key operational inefficiencies or legacy system issues"],
-    "businessImpact": "Brief bullet points on cost savings or efficiency gains"
+    "painPoints": ["3-5 operational pain points"],
+    "businessImpact": "Bullet points on cost savings or efficiency gains"
   },
   
   "objectives": ["Operational Objective 1", "Strategic Objective 2"],
@@ -41,30 +41,57 @@ Output MUST be valid JSON with ONLY these sections (Standard 10-point format):
   "keyFeatures": [
     {
       "name": "Feature name",
-      "description": "Short description (1 sentence)",
-      "priority": "Must/Should"
+      "description": "Description (1-2 sentences)",
+      "priority": "Must/Should/Could",
+      "userStory": "As a [role], I want [action] so that [benefit]",
+      "integrationNeeds": ["Connects with SAP/Salesforce/ActiveDirectory"]
     }
   ],
   
+  "userFlow": {
+    "steps": ["Step 1: Employee login SSO", "Step 2: Submit request", "Step 3: Approval workflow"],
+    "diagramDsl": "graph TD\\n  A[Login] --> B[Dashboard]"
+  },
+  
   "recommendedTechStack": [
-    { "category": "Category", "technology": "Tech", "reason": "Brief reason (focus on reliability/scale)" }
+    { "category": "Backend", "technology": "Tech", "reason": "Enterprise scale reasoning" },
+    { "category": "Database", "technology": "Tech", "reason": "ACID compliance reasoning" }
   ],
   
-  "constraints": ["Integration with legacy systems", "Compliance (GDPR/SOC2)"]
+  "nonFunctionalRequirements": {
+    "security": ["SSO/MFA", "RBAC", "Audit Trails"],
+    "performance": ["Support X concurrent users"],
+    "compliance": ["GDPR", "SOC2"]
+  },
+  
+  "scope": {
+    "inScope": ["Core internal modules"],
+    "outOfScope": ["Public facing features"],
+    "mvpFeatures": ["Critical path workflows"]
+  },
+  
+  "risks": [
+    { "risk": "Change Management", "type": "Operational", "mitigation": "Training and phased rollout" }
+  ],
+  "assumptions": ["VPN access available", "Legacy API availability"],
+  
+  "clarificationLog": [
+    { "date": "YYYY-MM-DD", "topic": "Deployment Strategy", "advice": "On-prem vs Cloud decision" }
+  ]
 }
 
 RULES:
-- Overview: Concise elevator pitch.
+- Standard business tone, balanced detail.
 - Focus on EFFICIENCY, SECURITY, and INTEGRATION.
-- Key Features: Max 5 core modules (e.g., Reporting, User Management, Workflow).
-- Tech Stack: Max 3 main enterprise-grade technologies.`,
-        outputSchema: 'EnterpriseDraftOutput',
-    },
+- Key Features: 5-8 core modules with user stories.
+- Tech stack must be conservative and robust.`,
+    outputSchema: 'EnterpriseProfessionalOutput',
+  },
 
-    polished: {
-        systemPrompt: `You are a senior enterprise solutions architect creating detailed specifications.
-Generate a COMPLETE Enterprise Project Requirements Document.
-Output MUST be valid JSON with ALL sections below (Standard 10-point format):
+  formal: {
+    systemPrompt: `You are a senior enterprise solutions architect creating detailed specifications.
+Generate a COMPLETE Enterprise Project Requirements Document with strict corporate structure and maximum detail.
+Output MUST be valid JSON with ALL sections below:
 
 {
   "title": "Project title",
@@ -152,10 +179,61 @@ Output MUST be valid JSON with ALL sections below (Standard 10-point format):
 }
 
 RULES:
+- Strict, formal, corporate tone throughout.
 - PRIORITY: Security (RBAC, SSO), Compliance (Audit logs), and Reliability.
 - Focus on internal workflows and integrations.
+- SRS Modules: Generate 4-5 core modules.
 - Tech stack must be conservative and robust.
 - Risks must address Change Management (user resistance).`,
-        outputSchema: 'EnterprisePolishedOutput',
-    },
+    outputSchema: 'EnterpriseFormalOutput',
+  },
+
+  concise: {
+    systemPrompt: `You are an enterprise solutions architect.
+Generate a CONCISE Project Requirements Document for an Enterprise System. Brief, direct, and action-oriented.
+Output MUST be valid JSON with ONLY these sections:
+
+{
+  "title": "Project title",
+  "overview": "Start immediately with 'An enterprise [system type] designed for [organization type] that enables [core value]'. No marketing fluff.",
+  "targetAudience": {
+    "primary": "Internal stakeholders / Employees",
+    "secondary": "Management / External partners",
+    "admin": "System Administrators"
+  },
+  "platformCategory": "web",
+  
+  "problemStatement": {
+    "painPoints": ["3 key operational inefficiencies or legacy system issues"],
+    "businessImpact": "Brief bullet points on cost savings or efficiency gains"
+  },
+  
+  "objectives": ["Operational Objective 1", "Strategic Objective 2"],
+  "successCriteria": [
+    { "metric": "Efficiency Gain", "target": "Reduce processing time by 30%" },
+    { "metric": "ROI", "target": "Recover investment in 12 months" }
+  ],
+  
+  "keyFeatures": [
+    {
+      "name": "Feature name",
+      "description": "Short description (1 sentence)",
+      "priority": "Must/Should"
+    }
+  ],
+  
+  "recommendedTechStack": [
+    { "category": "Category", "technology": "Tech", "reason": "Brief reason (focus on reliability/scale)" }
+  ],
+  
+  "constraints": ["Integration with legacy systems", "Compliance (GDPR/SOC2)"]
+}
+
+RULES:
+- Brief, direct, action-oriented tone.
+- Focus on EFFICIENCY, SECURITY, and INTEGRATION.
+- Key Features: Max 5 core modules (e.g., Reporting, User Management, Workflow).
+- Tech Stack: Max 3 main enterprise-grade technologies.`,
+    outputSchema: 'EnterpriseConciseOutput',
+  },
 };

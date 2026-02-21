@@ -398,11 +398,14 @@
                 </select>
 
                 <div class="toggle-group">
-                    <div class="toggle-option active" onclick="setMode('draft')" id="opt-draft">
-                        Draft <span style="font-size:0.7em; opacity:0.7;">(2c)</span>
+                    <div class="toggle-option active" onclick="setMode('professional')" id="opt-professional">
+                        Professional <span style="font-size:0.7em; opacity:0.7;">(3c)</span>
                     </div>
-                    <div class="toggle-option" onclick="setMode('polished')" id="opt-polished">
-                        Polished <span style="font-size:0.7em; opacity:0.7;">(4c)</span>
+                    <div class="toggle-option" onclick="setMode('formal')" id="opt-formal">
+                        Formal <span style="font-size:0.7em; opacity:0.7;">(2c)</span>
+                    </div>
+                    <div class="toggle-option" onclick="setMode('concise')" id="opt-concise">
+                        Concise <span style="font-size:0.7em; opacity:0.7;">(1c)</span>
                     </div>
                 </div>
 
@@ -502,7 +505,7 @@
         const API = '/api';
         let token = localStorage.getItem('token');
         let currentBrief = null;
-        let mode = 'draft';
+        let mode = 'professional';
 
         // --- Init ---
         if (token) initAuth();
@@ -516,9 +519,20 @@
 
         function setMode(m) {
             mode = m;
-            document.getElementById('opt-draft').classList.toggle('active', m === 'draft');
-            document.getElementById('opt-polished').classList.toggle('active', m === 'polished');
+            document.getElementById('opt-professional').classList.toggle('active', m === 'professional');
+            document.getElementById('opt-formal').classList.toggle('active', m === 'formal');
+            document.getElementById('opt-concise').classList.toggle('active', m === 'concise');
+
+            const modeTag = document.getElementById('res-mode');
+            if (modeTag) {
+                modeTag.innerText = m.toUpperCase();
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set mode default
+            setMode('professional');
+        });
 
         // --- AUTH ---
         async function login() {

@@ -1,6 +1,6 @@
 export type ProjectType = "web_app" | "research"
 
-export type DocumentStyle = "profesional" | "formal" | "concise"
+export type DocumentStyle = "professional" | "formal" | "concise"
 export type OutputLanguage = "english" | "indonesia"
 export type ProjectStatus = "new_idea" | "in_progress" | "maintenance"
 
@@ -29,10 +29,16 @@ export interface GenerateProjectInput {
     projectName: string
     projectDescription: string
     projectType: string
+    documentStyle?: string
+    outputLanguage?: string
+    projectStatus?: string
     targetAudience?: string
+    primaryMetric?: string
     keyFeatures?: string
     techStack?: string[]
-    mode?: "draft" | "polished"
+    outOfScope?: string
+    integrationRequirements?: string
+    knownConstraints?: string
     includeDiagram?: boolean
 }
 

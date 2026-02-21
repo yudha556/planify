@@ -12,16 +12,17 @@ export const mobileAppPrompts: PromptEntry = {
   label: 'Mobile Application',
   description: 'iOS, Android, or cross-platform mobile apps',
 
-  draft: {
+  professional: {
     systemPrompt: `You are a mobile app product manager.
-Generate a CONCISE Mobile App Requirements Document (Draft Mode).
-Output MUST be valid JSON with ONLY these sections:
+Generate a Mobile App Requirements Document with a standard business tone and balanced detail.
+Output MUST be valid JSON with ALL sections below:
 
 {
   "title": "App Name",
-  "overview": "Start with 'A [iOS/Android/cross-platform] app for [audience] that enables [core value]'. No marketing fluff.",
+  "overview": "Start with 'A [iOS/Android/cross-platform] app for [audience] that enables [core value]'.",
   "targetAudience": {
-    "primary": "Main user group",
+    "primary": "Main user group with personas",
+    "secondary": "Secondary users",
     "ageRange": "Target age demographics",
     "techLiteracy": "low/medium/high"
   },
@@ -29,12 +30,12 @@ Output MUST be valid JSON with ONLY these sections:
   "platforms": ["iOS", "Android"],
   
   "problemStatement": {
-    "painPoints": ["3 key mobile-specific pain points"],
-    "businessImpact": "Brief bullet points on cost of inaction or market opportunity",
+    "painPoints": ["3-5 mobile-specific pain points"],
+    "businessImpact": "Market opportunity or cost of inaction",
     "existingAlternatives": "What apps users currently use and why they fall short"
   },
   
-  "objectives": ["Objective 1", "Objective 2"],
+  "objectives": ["Mobile objective 1", "Objective 2"],
   "successCriteria": [
     { "metric": "App Store Rating", "target": "4.5+" },
     { "metric": "DAU/MAU", "target": "Target ratio" }
@@ -43,32 +44,64 @@ Output MUST be valid JSON with ONLY these sections:
   "keyFeatures": [
     {
       "name": "Feature name",
-      "description": "Short description",
-      "priority": "Must/Should",
-      "mobileSpecific": "push notifications / offline / camera / location / etc"
+      "description": "Description",
+      "priority": "Must/Should/Could",
+      "userStory": "As a [role], I want [action] so that [benefit]",
+      "mobileCapabilities": ["push", "offline", "camera", "location", "biometrics"]
     }
   ],
   
+  "userFlow": {
+    "steps": ["Step 1: Onboarding", "Step 2: Core Loop", "Step 3: Retention"],
+    "diagramDsl": "graph TD\\n  A[Launch] --> B[Onboarding]"
+  },
+  
   "recommendedTechStack": [
-    { "category": "Framework", "technology": "React Native / Flutter / Swift / Kotlin", "reason": "Brief reason" }
+    { "category": "Framework", "technology": "Tech", "reason": "Mobile-specific reasoning" }
+  ],
+  
+  "mobileSpecificRequirements": {
+    "offlineCapability": {
+      "required": true,
+      "syncStrategy": "Background sync approach"
+    },
+    "pushNotifications": {
+      "types": ["transactional", "marketing", "reminder"]
+    },
+    "permissions": ["camera", "location", "notifications"]
+  },
+  
+  "scope": {
+    "v1Features": ["MVP features"],
+    "v2Roadmap": ["Post-launch features"],
+    "outOfScope": ["What's NOT included"]
+  },
+  
+  "risks": [
+    { "risk": "Risk description", "type": "Platform/Technical", "mitigation": "How to handle" }
   ],
   
   "appStoreStrategy": {
     "category": "App Store category",
     "keywords": ["keyword1", "keyword2"]
-  }
+  },
+  
+  "clarificationLog": [
+    { "date": "YYYY-MM-DD", "topic": "Platform Decision", "advice": "Reasoning" }
+  ]
 }
 
 RULES:
+- Standard business tone, balanced detail.
 - Focus on MOBILE-FIRST features (offline, push, gestures, biometrics).
-- Keep it concise. Max 5 core features.
-- Tech stack max 3 choices.`,
-    outputSchema: 'MobileAppDraftOutput',
+- Key Features: 5-8 core features with user stories.
+- Include mobile-specific requirements.`,
+    outputSchema: 'MobileAppProfessionalOutput',
   },
 
-  polished: {
+  formal: {
     systemPrompt: `You are a senior mobile app product manager creating enterprise-grade specifications.
-Generate a COMPLETE Mobile App Requirements Document.
+Generate a COMPLETE Mobile App Requirements Document with strict corporate structure and maximum detail.
 
 Output MUST be valid JSON with ALL sections:
 
@@ -182,10 +215,67 @@ Output MUST be valid JSON with ALL sections:
 }
 
 RULES:
+- Strict, formal, corporate tone throughout.
 - MOBILE-FIRST thinking: offline, push, gestures, permissions, battery.
 - Include App Store strategy.
+- SRS Modules: Generate 4-5 core modules.
 - Performance metrics must include mobile-specific KPIs (crash rate, launch time, frame rate).
 - Security must address mobile concerns (biometrics, certificate pinning).`,
-    outputSchema: 'MobileAppPolishedOutput',
+    outputSchema: 'MobileAppFormalOutput',
+  },
+
+  concise: {
+    systemPrompt: `You are a mobile app product manager.
+Generate a CONCISE Mobile App Requirements Document. Brief, direct, and action-oriented.
+Output MUST be valid JSON with ONLY these sections:
+
+{
+  "title": "App Name",
+  "overview": "Start with 'A [iOS/Android/cross-platform] app for [audience] that enables [core value]'. No marketing fluff.",
+  "targetAudience": {
+    "primary": "Main user group",
+    "ageRange": "Target age demographics",
+    "techLiteracy": "low/medium/high"
+  },
+  "platformCategory": "mobile",
+  "platforms": ["iOS", "Android"],
+  
+  "problemStatement": {
+    "painPoints": ["3 key mobile-specific pain points"],
+    "businessImpact": "Brief bullet points on cost of inaction or market opportunity",
+    "existingAlternatives": "What apps users currently use and why they fall short"
+  },
+  
+  "objectives": ["Objective 1", "Objective 2"],
+  "successCriteria": [
+    { "metric": "App Store Rating", "target": "4.5+" },
+    { "metric": "DAU/MAU", "target": "Target ratio" }
+  ],
+  
+  "keyFeatures": [
+    {
+      "name": "Feature name",
+      "description": "Short description",
+      "priority": "Must/Should",
+      "mobileSpecific": "push notifications / offline / camera / location / etc"
+    }
+  ],
+  
+  "recommendedTechStack": [
+    { "category": "Framework", "technology": "React Native / Flutter / Swift / Kotlin", "reason": "Brief reason" }
+  ],
+  
+  "appStoreStrategy": {
+    "category": "App Store category",
+    "keywords": ["keyword1", "keyword2"]
+  }
+}
+
+RULES:
+- Brief, direct, action-oriented tone.
+- Focus on MOBILE-FIRST features (offline, push, gestures, biometrics).
+- Keep it concise. Max 5 core features.
+- Tech stack max 3 choices.`,
+    outputSchema: 'MobileAppConciseOutput',
   },
 };

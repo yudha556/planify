@@ -5,10 +5,10 @@
  */
 
 export type ProjectType = 'webapp' | 'mobile' | 'research' | 'enterprise';
-export type GenerationMode = 'draft' | 'polished';
+export type DocumentStyle = 'professional' | 'formal' | 'concise';
 
 /**
- * Base prompt configuration for a specific project type and mode
+ * Base prompt configuration for a specific project type and style
  */
 export interface PromptConfig {
     systemPrompt: string;
@@ -16,14 +16,15 @@ export interface PromptConfig {
 }
 
 /**
- * Registry entry containing both draft and polished prompts
+ * Registry entry containing professional/formal/concise prompts
  */
 export interface PromptEntry {
     type: ProjectType;
     label: string;
     description: string;
-    draft: PromptConfig;
-    polished: PromptConfig;
+    professional: PromptConfig;
+    formal: PromptConfig;
+    concise: PromptConfig;
 }
 
 // Lazy-loaded prompt entries to avoid circular imports
@@ -50,13 +51,13 @@ function getRegistry(): Record<ProjectType, PromptEntry> {
 /**
  * Get prompt from registry
  */
-export function getPrompt(type: ProjectType, mode: GenerationMode): PromptConfig {
+export function getPrompt(type: ProjectType, style: DocumentStyle): PromptConfig {
     const registry = getRegistry();
     const entry = registry[type];
     if (!entry) {
         throw new Error(`Unknown project type: ${type}`);
     }
-    return mode === 'polished' ? entry.polished : entry.draft;
+    return entry[style];
 }
 
 /**

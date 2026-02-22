@@ -12,20 +12,52 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-    const router = useRouter()
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-    const onSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setIsLoading(true)
 
-        // logic be
+    const form = e.target as HTMLFormElement
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value
 
-        router.push("/dashboard")
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || "Login failed")
+        return
+      }
+
+      // Store token and user data
+      localStorage.setItem("token", data.data.token)
+      localStorage.setItem("user", JSON.stringify(data.data.user))
+
+      router.push("/dashboard")
+    } catch (err: any) {
+      setError(err.message || "Network error. Is the backend running?")
+    } finally {
+      setIsLoading(false)
     }
+  }
   return (
     <form onSubmit={onSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
@@ -51,8 +83,17 @@ export function LoginForm({
           </div>
           <Input id="password" type="password" required />
         </Field>
+
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
         <Field>
-          <Button type="submit">Login</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Login"}
+          </Button>
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
         <Field className="flex flex-col gap-3 mt-4">

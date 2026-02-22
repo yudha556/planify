@@ -5,7 +5,7 @@ import { Field, FieldLabel } from "@workspace/ui/components/field";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Separator } from "@workspace/ui/components/separator";
-import { ArrowRight, Cpu, Goal, ListTodo } from "lucide-react";
+import { ArrowRight, Cpu, Goal, ListTodo, Loader2 } from "lucide-react";
 import { TagInput } from "./components/tagInput";
 import { Button } from "@workspace/ui/components/button";
 import type { WebAppFormData } from "../../../types";
@@ -15,9 +15,18 @@ interface Props {
   formData: WebAppFormData;
   updateField: <K extends keyof WebAppFormData>(field: K, value: WebAppFormData[K]) => void;
   canProceedToReview: boolean;
+  onGenerate: (formData: WebAppFormData, includeDiagram?: boolean) => Promise<void>;
+  isGenerating: boolean;
+  generateError: string | null;
 }
 
-export function DetailsScopeStep({ setStep, formData, updateField, canProceedToReview }: Props) {
+export function DetailsScopeStep({ setStep, formData, updateField, canProceedToReview, onGenerate, isGenerating, generateError }: Props) {
+
+  const handleContinueToReview = async () => {
+    await onGenerate(formData)
+    setStep(4)
+  }
+
   return (
     <div className="space-y-4 mb-25">
       <div className="flex flex-col gap-2">
@@ -142,17 +151,33 @@ export function DetailsScopeStep({ setStep, formData, updateField, canProceedToR
         <Button
           onClick={() => setStep(2)}
           variant={"outline"}
+          disabled={isGenerating}
           className="flex flex-row gap-4 items-center text-sm px-5 py-5 hover:translate-y-1 hover:shadow-md cursor-pointer "
         >Back</Button>
         <Button
-          onClick={() => setStep(4)}
-          // disabled={!canProceedToReview}
+          onClick={handleContinueToReview}
+          disabled={isGenerating}
           className="flex flex-row gap-4 items-center text-sm px-5 py-5 hover:translate-y-1 hover:shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Continue to Review
-          <ArrowRight className="w-4 h-4" />
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              Continue to Review
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </Button>
       </div>
+
+      {generateError && (
+        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-600">{generateError}</p>
+        </div>
+      )}
     </div>
   );
 }

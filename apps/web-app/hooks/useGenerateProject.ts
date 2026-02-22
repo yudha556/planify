@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { generateProjectBrief } from "../../../../services/project.service"
-import type { WebAppFormData, GenerateProjectInput, GenerateProjectResponse } from "../../../../types"
+import { generateProjectBrief } from "../features/project/services/project.service"
+import type { WebAppFormData, GenerateProjectInput, GenerateProjectResponse } from "../features/project/types"
 
 interface UseGenerateProjectReturn {
     isLoading: boolean

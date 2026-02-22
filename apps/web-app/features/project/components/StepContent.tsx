@@ -1,6 +1,6 @@
 import { stepRegistry } from "../step.registry"
 import { ProjectType } from "../types"
-import type { WebAppFormData } from "../types"
+import type { WebAppFormData, GenerateProjectResponse } from "../types"
 
 interface Props {
   type: ProjectType | null
@@ -11,6 +11,10 @@ interface Props {
   updateField: <K extends keyof WebAppFormData>(field: K, value: WebAppFormData[K]) => void
   canProceedToDetails: boolean
   canProceedToReview: boolean
+  onGenerate: (formData: WebAppFormData, includeDiagram?: boolean) => Promise<void>
+  isGenerating: boolean
+  generateError: string | null
+  generateResult: GenerateProjectResponse | null
 }
 
 export function StepContent({
@@ -22,6 +26,10 @@ export function StepContent({
   updateField,
   canProceedToDetails,
   canProceedToReview,
+  onGenerate,
+  isGenerating,
+  generateError,
+  generateResult,
 }: Props) {
   const StepComponent =
     type ? stepRegistry[type]?.[step] : stepRegistry.web_app[1]
@@ -37,6 +45,10 @@ export function StepContent({
         updateField={updateField}
         canProceedToDetails={canProceedToDetails}
         canProceedToReview={canProceedToReview}
+        onGenerate={onGenerate}
+        isGenerating={isGenerating}
+        generateError={generateError}
+        generateResult={generateResult}
       />
     </div>
   )

@@ -327,7 +327,6 @@
 </head>
 
 <body>
-
     <!-- NAV BAR -->
     <nav class="navbar">
         <div class="brand">
@@ -453,15 +452,20 @@
                 <div class="result-box">
                     <div class="result-header">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <h2 id="res-title" style="margin: 0; color: var(--primary);">Project Title</h2>
+                            <h2 id="res-title" style="margin:0; color:var(--primary);">Project Title</h2>
                             <span class="tag" id="res-mode">DRAFT</span>
                         </div>
-                        <button class="secondary" style="width: auto; padding: 0.4rem 1rem;" onclick="downloadPdf()"
-                            id="btn-pdf">
-                            <i data-lucide="file-down" size="16"></i> Export PDF (1c)
-                        </button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="secondary" style="width: auto; padding: 0.4rem 1rem;"
+                                onclick="downloadMarkdown()" id="btn-md">
+                                <i data-lucide="file-text" size="16"></i> Export MD (1c)
+                            </button>
+                            <button class="secondary" style="width: auto; padding: 0.4rem 1rem;" onclick="downloadPdf()"
+                                id="btn-pdf">
+                                <i data-lucide="file-down" size="16"></i> Export PDF (1c)
+                            </button>
+                        </div>
                     </div>
-
                     <p id="res-overview"
                         style="line-height: 1.6; color: #cbd5e1; margin-bottom: 1.5rem; font-size: 1.05rem;"></p>
 
@@ -987,6 +991,47 @@
                 lucide.createIcons();
             }
         }
+
+        async function downloadMarkdown() {
+            if (!currentBrief) return;
+            const btn = document.getElementById('btn-md');
+            btn.innerHTML = `Downloading...`;
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API}/markdown/brief`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(currentBrief)
+                });
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentBrief.title}_Brief.md`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+
+                    // update coins
+                    fetchCoins();
+                } else {
+                    const txt = await res.text();
+                    alert("Error: " + txt);
+                }
+            } catch (e) { console.error(e); alert('Markdown export failed'); }
+            finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="file-text" size="16"></i> Export MD (1c)`;
+                lucide.createIcons();
+            }
+        }
+
     </script>
 
     <style>

@@ -6,6 +6,7 @@ export const COIN_COSTS = {
     BRIEF_POLISHED: 4,
     DIAGRAM: 2,
     PDF: 1,
+    MARKDOWN: 1,
 } as const;
 
 export const coinService = {

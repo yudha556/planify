@@ -14,8 +14,8 @@ export type AITaskType =
     | "generate_architecture_diagram"
     | "generate_roadmap";
 
-// Generation mode
-export type GenerationMode = "draft" | "polished";
+// Document style (replaces draft/polished mode)
+export type DocumentStyle = "professional" | "formal" | "concise";
 
 // Project types for multi-domain support
 export type ProjectType = "webapp" | "mobile" | "research" | "enterprise";
@@ -24,11 +24,17 @@ export type ProjectType = "webapp" | "mobile" | "research" | "enterprise";
 export interface ProjectBriefInput {
     projectName: string;
     projectDescription: string;
-    projectType?: ProjectType; // NEW: Determines prompt strategy
+    projectType?: ProjectType; // Determines prompt strategy
+    documentStyle?: DocumentStyle; // professional/formal/concise (replaces mode)
+    outputLanguage?: string; // e.g. "English", "Indonesia"
+    projectStatus?: string; // e.g. "New Idea", "In Progress", "Maintenance"
     targetAudience?: string;
     keyFeatures?: string[];
     techStack?: string[];
-    mode?: GenerationMode; // draft = concise, polished = detailed
+    primaryMetric?: string;
+    outOfScope?: string;
+    integrationRequirements?: string;
+    knownConstraints?: string;
     includeDiagram?: boolean;
     budget?: string;
     timeline?: string;

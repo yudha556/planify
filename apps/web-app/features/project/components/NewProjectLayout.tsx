@@ -2,13 +2,17 @@
 
 import { useState } from "react"
 import { ProjectType } from "../types"
+import type { WebAppFormData } from "../types"
 import { StepSidebar } from "./StepSidebar"
 import { StepContent } from "./StepContent"
 import { ReviewSidebar } from "./reviewSidebar"
+import { useWebAppForm } from "./steps/webApp/hooks"
 
 export function NewProjectLayout() {
   const [type, setType] = useState<ProjectType | null>(null)
   const [step, setStep] = useState(1)
+
+  const { formData, updateField, resetForm, canProceedToDetails, canProceedToReview } = useWebAppForm()
 
   const isReview = step === 4
 
@@ -25,6 +29,10 @@ export function NewProjectLayout() {
           step={step}
           setType={setType}
           setStep={setStep}
+          formData={formData}
+          updateField={updateField}
+          canProceedToDetails={canProceedToDetails}
+          canProceedToReview={canProceedToReview}
         />
       </main>
 

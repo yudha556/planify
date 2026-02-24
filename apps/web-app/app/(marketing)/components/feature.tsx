@@ -1,108 +1,163 @@
+"use client";
+
+import { motion, type Variants } from "framer-motion";
 import { Card } from "@workspace/ui/components/card";
-import { ArrowRight, Badge, Check, FileText, GitMerge, ListTodo } from "lucide-react";
+import { Check, FileText, GitMerge, ListTodo } from "lucide-react";
+
+const MotionCard = motion(Card);
+
+const containerVariants: Variants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
 
 export default function Feature() {
   return (
-    <div className="px-14 py-30 flex flex-col w-full gap-12">
-      <div className="w-full items-center justify-between">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-3xl font-bold">Professional Output Every Time</h1>
-          <p className="text-xl text-gray-500">
-            From quick brief to detailed technical specifications.
-          </p>
-        </div>
+    <section className="px-14 py-32 flex flex-col w-full gap-16 bg-gradient-to-b from-white to-blue-50/40">
+      
+      {/* HEADER */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="flex flex-col gap-4 max-w-2xl"
+      >
+        <h1 className="text-4xl font-bold">
+          Professional Output Every Time
+        </h1>
+        <p className="text-lg text-gray-500">
+          From quick brief to detailed technical specifications.
+        </p>
+      </motion.div>
 
-        {/* <Badge */}
-      </div>
+      {/* CARDS */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="grid md:grid-cols-3 gap-8"
+      >
+        <FloatingCard>
+          <FloatingIcon>
+            <FileText className="text-blue-600" />
+          </FloatingIcon>
 
-      <div className="flex flex-row items-center justify-between w-full mt-10 gap-8">
-        <Card className="p-4 flex flex-col gap-8">
-          <div className="w-10 h-10 flex items-center justify-center rounded-sm bg-gray-300">
-            <FileText className="text-blue-500" />
-          </div>
           <div className="flex flex-col gap-2">
-            <h1 className="font-bold text-xl">Project Briefs</h1>
+            <h2 className="font-bold text-xl">Project Briefs</h2>
             <p className="text-sm text-gray-500">
-              Define the core problems, goals, scope, and stakeholders in a
-              concise on-page format.
+              Define core problems, goals, scope, and stakeholders in a concise format.
             </p>
           </div>
 
-          <Card className="bg-gray-200 p-4 flex flex-col gap-3">
-            <h1 className="font-semibold text-lg">Brief structure</h1>
-            <div className="flex flex-row gap-2 items-center">
-                <Check className="text-green-500 size-5" />
-                <p className="text-sm">Project Overview</p>
-            </div>
-            <div className="flex flex-row gap-2 items-center">
-                <Check className="text-green-500 size-5" />
-                <p className="text-sm">Target Audience</p>
-            </div>
-            <div className="flex flex-row gap-2 items-center">
-                <Check className="text-green-500 size-5" />
-                <p className="text-sm">Key Metrics</p>
-            </div>
+          <Card className="bg-gray-100 p-4 flex flex-col gap-3">
+            <h3 className="font-semibold text-lg">Brief Structure</h3>
+            {["Project Overview", "Target Audience", "Key Metrics"].map((item) => (
+              <div key={item} className="flex items-center gap-2">
+                <Check className="text-green-500 size-4" />
+                <p className="text-sm">{item}</p>
+              </div>
+            ))}
           </Card>
-        </Card>
-        <Card className="p-4 flex flex-col gap-8">
-          <div className="w-10 h-10 flex items-center justify-center rounded-sm bg-gray-300">
-            <ListTodo className="text-blue-500" />
-          </div>
+        </FloatingCard>
+
+        <FloatingCard>
+          <FloatingIcon>
+            <ListTodo className="text-blue-600" />
+          </FloatingIcon>
+
           <div className="flex flex-col gap-2">
-            <h1 className="font-bold text-xl">Feature Prioritization</h1>
+            <h2 className="font-bold text-xl">Feature Prioritization</h2>
             <p className="text-sm text-gray-500">
-              Structured MoSCoW view that keeps discussions focused on impact, not opinions.
+              Structured MoSCoW view focused on impact, not opinions.
             </p>
           </div>
 
-          <Card className="bg-gray-200 p-4 flex flex-col gap-3">
-            <h1 className="font-semibold text-lg">Brief structure</h1>
-            <div className="flex flex-row gap-2 items-center justify-between">
-                <p className="text-md text-gray-500">User Authentication</p>
-                <p className="text-md text-gray-500 font-semibold">MUST</p>
-            </div>
-            <div className="flex flex-row gap-2 items-center justify-between">
-                <p className="text-md text-gray-500">Onboarding Checklist</p>
-                <p className="text-md text-gray-500 font-semibold">SHOULD</p>
-            </div>
-            <div className="flex flex-row gap-2 items-center justify-between">
-                <p className="text-md text-gray-500">Dark Mode</p>
-                <p className="text-md text-gray-500 font-semibold">COULD</p>
-            </div>
-            
+          <Card className="bg-gray-100 p-4 flex flex-col gap-3">
+            {[
+              { name: "User Authentication", tag: "MUST" },
+              { name: "Onboarding Checklist", tag: "SHOULD" },
+              { name: "Dark Mode", tag: "COULD" },
+            ].map((item) => (
+              <div key={item.name} className="flex justify-between text-sm">
+                <span>{item.name}</span>
+                <span className="font-semibold text-blue-600">{item.tag}</span>
+              </div>
+            ))}
           </Card>
-        </Card>
-        <Card className="p-4 flex flex-col gap-8">
-          <div className="w-10 h-10 flex items-center justify-center rounded-sm bg-gray-300">
-            <GitMerge className="text-blue-500" />
-          </div>
+        </FloatingCard>
+
+        <FloatingCard>
+          <FloatingIcon>
+            <GitMerge className="text-blue-600" />
+          </FloatingIcon>
+
           <div className="flex flex-col gap-2">
-            <h1 className="font-bold text-xl">User Flows</h1>
+            <h2 className="font-bold text-xl">User Flows</h2>
             <p className="text-sm text-gray-500">
-              High-level user journeys from entry to success, ready to share with design and engineering.
+              High-level user journeys ready for design and engineering.
             </p>
           </div>
 
-          <Card className="bg-gray-200 p-4 flex flex-row gap-2 items-center min-h-38">
-            <div className="bg-white shadow-md rounded-sm w-full px-1 items-center justify-center flex">
-                <p className="text-sm text-gray-500">Landing</p>
-            </div>
-
-
-             <div className="bg-white shadow-md rounded-sm w-full px-1 items-center justify-center flex">
-                <p className="text-sm text-gray-500">Dashboard</p>
-            </div>
-
-             <div className="bg-white shadow-md rounded-sm w-full px-1 items-center justify-center flex">
-                <p className="text-sm text-gray-500">Create PRD</p>
-            </div>
-             {/* <div className="bg-white shadow-md rounded-sm w-full px-1 items-center justify-center flex">
-                <p className="text-sm text-gray-500">Export</p>
-            </div> */}
-
+          <Card className="bg-gray-100 p-4 flex gap-3 items-center min-h-[100px]">
+            {["Landing", "Dashboard", "Create PRD"].map((step) => (
+              <motion.div
+                key={step}
+                whileHover={{ scale: 1.05 }}
+                className="bg-white shadow rounded-md px-3 py-2 text-sm text-gray-600"
+              >
+                {step}
+              </motion.div>
+            ))}
           </Card>
-        </Card>
-      </div>
-    </div>
+        </FloatingCard>
+      </motion.div>
+    </section>
+  );
+}
+
+function FloatingCard({ children }: { children: React.ReactNode }) {
+  return (
+    <MotionCard
+      variants={cardVariants}
+      animate={{ y: [0, -8, 0] }} 
+      transition={{
+        y: {
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+        },
+      }}
+      whileHover={{ scale: 1.04 }}
+      className="p-6 flex flex-col gap-8 border bg-white/80 backdrop-blur-sm"
+    >
+      {children}
+    </MotionCard>
+  );
+}
+
+function FloatingIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      animate={{ y: [0, -6, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      className="w-12 h-12 flex items-center justify-center rounded-lg bg-blue-100"
+    >
+      {children}
+    </motion.div>
   );
 }

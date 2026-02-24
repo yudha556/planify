@@ -180,4 +180,8 @@
   }
 }
 
+.scroll-smoth {
+  scroll-behavior: smooth;
+}
+
 

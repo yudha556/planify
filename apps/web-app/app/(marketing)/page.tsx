@@ -7,13 +7,29 @@ import Pricing from "./components/pricing";
 
 export default function LandingPage() {
   return (
-    <div className=" w-full flex flex-col overflow-x-hidden">
+    <div className="w-full flex flex-col overflow-x-hidden scroll-smooth scroll-smoth">
+      
+      <section id="hero">
         <Hero />
+      </section>
+
+      <section id="features">
         <Feature />
+      </section>
+
+      <section id="how-it-works">
         <HowItWorks />
+      </section>
+
+      <section id="pricing">
         <Pricing />
+      </section>
+
+      <section id="planning">
         <PlanningSection />
-        <Footer />
+      </section>
+
+      <Footer />
     </div>
-  )
+  );
 }

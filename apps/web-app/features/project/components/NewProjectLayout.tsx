@@ -6,8 +6,8 @@ import type { WebAppFormData } from "../types"
 import { StepSidebar } from "./StepSidebar"
 import { StepContent } from "./StepContent"
 import { ReviewSidebar } from "./reviewSidebar"
-import { useWebAppForm } from "../../../hooks"
-import { useGenerateProject } from "../../../hooks"
+import { useWebAppForm } from "./steps/webApp/hooks"
+import { useGenerateProject } from "./steps/webApp/hooks"
 
 export function NewProjectLayout() {
   const [type, setType] = useState<ProjectType | null>(null)

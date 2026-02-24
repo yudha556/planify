@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import type { WebAppFormData, DocumentStyle, OutputLanguage, ProjectStatus } from "../features/project/types"
+import type { WebAppFormData, DocumentStyle, OutputLanguage, ProjectStatus } from "../../../../types"
 
 const initialFormData: WebAppFormData = {
     // Step 1

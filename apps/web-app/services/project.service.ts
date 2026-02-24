@@ -6,7 +6,7 @@
  */
 
 import { apiClient } from "./api"
-import type { GenerateProjectInput, GenerateProjectResponse } from "../types"
+import type { GenerateProjectInput, GenerateProjectResponse } from "../features/project/types"
 
 /**
  * Generate Project Brief via AI
@@ -77,6 +77,20 @@ export async function exportPdf(input: {
     diagramImage?: string
 }) {
     return apiClient("/pdf/generate", {
+        method: "POST",
+        body: input,
+    })
+}
+
+/**
+ * Export project to Markdown
+ * POST /markdown/generate
+ */
+export async function exportMarkdown(input: {
+    content: any
+    diagramImage?: string
+}) {
+    return apiClient("/markdown/generate", {
         method: "POST",
         body: input,
     })

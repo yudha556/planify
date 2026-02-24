@@ -7,12 +7,14 @@ import { StepSidebar } from "./StepSidebar"
 import { StepContent } from "./StepContent"
 import { ReviewSidebar } from "./reviewSidebar"
 import { useWebAppForm } from "./steps/webApp/hooks"
+import { useGenerateProject } from "./steps/webApp/hooks"
 
 export function NewProjectLayout() {
   const [type, setType] = useState<ProjectType | null>(null)
   const [step, setStep] = useState(1)
 
   const { formData, updateField, resetForm, canProceedToDetails, canProceedToReview } = useWebAppForm()
+  const { isLoading: isGenerating, error: generateError, result: generateResult, generate, clearError } = useGenerateProject()
 
   const isReview = step === 4
 
@@ -33,6 +35,10 @@ export function NewProjectLayout() {
           updateField={updateField}
           canProceedToDetails={canProceedToDetails}
           canProceedToReview={canProceedToReview}
+          onGenerate={generate}
+          isGenerating={isGenerating}
+          generateError={generateError}
+          generateResult={generateResult}
         />
       </main>
 

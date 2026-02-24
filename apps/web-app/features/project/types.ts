@@ -43,15 +43,21 @@ export interface GenerateProjectInput {
 }
 
 export interface GenerateProjectResponse {
+    title?: string
     overview?: any
+    targetAudience?: any
     problemStatement?: any
     objectives?: any
+    successCriteria?: any
     keyFeatures?: any
     userFlow?: any
     srsModules?: any
     recommendedTechStack?: any
+    nonFunctionalRequirements?: any
     scope?: any
     risks?: any
+    assumptions?: any
     clarificationLog?: any
     diagram?: any
+    [key: string]: any  // Allow any additional fields from AI
 }

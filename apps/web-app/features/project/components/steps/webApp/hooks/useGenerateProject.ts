@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { generateProjectBrief } from "../../../../services/project.service"
+import { generateProjectBrief } from "../../../../../../services/project.service"
 import type { WebAppFormData, GenerateProjectInput, GenerateProjectResponse } from "../../../../types"
 
 interface UseGenerateProjectReturn {

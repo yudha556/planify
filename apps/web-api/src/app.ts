@@ -5,6 +5,7 @@ import healthRoute from "./routes/health.route";
 import authRoute from "./routes/auth.route";
 import aiRoute from "./routes/ai.route";
 import pdfRoute from "./routes/pdf.route";
+import markdownRoute from "./routes/markdown.route";
 import { errorHandler } from "./middlewares/error.middleware";
 
 const app: Express = express();
@@ -30,6 +31,7 @@ app.use("/api/health", healthRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/ai", aiRoute);
 app.use("/api/pdf", pdfRoute);
+app.use("/api/markdown", markdownRoute);
 
 // Error handler (must be last)
 app.use(errorHandler);

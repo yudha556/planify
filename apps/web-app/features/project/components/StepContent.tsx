@@ -32,7 +32,7 @@ export function StepContent({
   generateResult,
 }: Props) {
   const StepComponent =
-    type ? stepRegistry[type]?.[step] : stepRegistry.web_app[1]
+    type ? (stepRegistry[type]?.[step] || stepRegistry.web_app[step]) : stepRegistry.web_app[1]
 
   if (!StepComponent) return null
 

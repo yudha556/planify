@@ -11,6 +11,7 @@ interface UseGenerateProjectReturn {
     generate: (formData: WebAppFormData, includeDiagram?: boolean) => Promise<void>
     clearError: () => void
     clearResult: () => void
+    setResult: (result: GenerateProjectResponse | null) => void
 }
 
 export function useGenerateProject(): UseGenerateProjectReturn {
@@ -70,5 +71,6 @@ export function useGenerateProject(): UseGenerateProjectReturn {
         generate,
         clearError,
         clearResult,
+        setResult,
     }
 }

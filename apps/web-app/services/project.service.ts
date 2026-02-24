@@ -59,6 +59,44 @@ export async function getProjectById(id: string) {
 }
 
 /**
+ * Create a new project
+ * POST /projects
+ */
+export async function createProject(input: {
+    title: string
+    description?: string
+    projectType?: string
+    documentStyle?: string
+    formData?: Record<string, any>
+    currentStep?: number
+}) {
+    return apiClient("/projects", {
+        method: "POST",
+        body: input,
+    })
+}
+
+/**
+ * Update project (auto-save)
+ * PUT /projects/:id
+ */
+export async function updateProject(id: string, input: {
+    title?: string
+    description?: string
+    projectType?: string
+    currentStep?: number
+    formData?: Record<string, any>
+    generatedBrief?: Record<string, any> | null
+    documentStyle?: string
+    status?: string
+}) {
+    return apiClient(`/projects/${id}`, {
+        method: "PUT",
+        body: input,
+    })
+}
+
+/**
  * Delete a project
  * DELETE /projects/:id
  */
@@ -69,29 +107,31 @@ export async function deleteProject(id: string) {
 }
 
 /**
- * Export project to PDF
- * POST /pdf/generate
+ * Get user's activity history
+ * GET /history?limit=&offset=
  */
-export async function exportPdf(input: {
-    content: any
-    diagramImage?: string
-}) {
-    return apiClient("/pdf/generate", {
+export async function getHistory(limit: number = 20, offset: number = 0) {
+    return apiClient(`/history?limit=${limit}&offset=${offset}`)
+}
+
+/**
+ * Export project to PDF
+ * POST /pdf/brief
+ */
+export async function exportPdf(briefData: any) {
+    return apiClient("/pdf/brief", {
         method: "POST",
-        body: input,
+        body: briefData,
     })
 }
 
 /**
  * Export project to Markdown
- * POST /markdown/generate
+ * POST /markdown/brief
  */
-export async function exportMarkdown(input: {
-    content: any
-    diagramImage?: string
-}) {
-    return apiClient("/markdown/generate", {
+export async function exportMarkdown(briefData: any) {
+    return apiClient("/markdown/brief", {
         method: "POST",
-        body: input,
+        body: briefData,
     })
 }

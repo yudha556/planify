@@ -10,6 +10,7 @@ import { asyncHandler } from "../utils/async-handler";
 import { markdownService } from "../services/markdown/markdown.service";
 import { ProjectBriefOutput } from "../services/ai/types";
 import { coinService, COIN_COSTS } from "../services/coin";
+import { historyService } from "../services/history/history.service";
 import { ErrorCodes } from "../utils/app-error";
 
 export const markdownController = {
@@ -49,6 +50,16 @@ export const markdownController = {
 
             // Deduct coins
             await coinService.deduct(userId, cost);
+
+            // Log activity (non-blocking)
+            historyService.logActivity({
+                userId,
+                action: "export_markdown",
+                coinsUsed: cost,
+                metadata: {
+                    projectTitle: brief.title,
+                },
+            });
 
             // Send as downloadable .md file
             const filename = `${brief.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_brief.md`;

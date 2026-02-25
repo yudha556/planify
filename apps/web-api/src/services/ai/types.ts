@@ -14,17 +14,27 @@ export type AITaskType =
     | "generate_architecture_diagram"
     | "generate_roadmap";
 
-// Generation mode
-export type GenerationMode = "draft" | "polished";
+// Document style (replaces draft/polished mode)
+export type DocumentStyle = "professional" | "formal" | "concise";
+
+// Project types for multi-domain support
+export type ProjectType = "webapp" | "mobile" | "research" | "enterprise";
 
 // Input for project brief generation
 export interface ProjectBriefInput {
     projectName: string;
     projectDescription: string;
+    projectType?: ProjectType; // Determines prompt strategy
+    documentStyle?: DocumentStyle; // professional/formal/concise (replaces mode)
+    outputLanguage?: string; // e.g. "English", "Indonesia"
+    projectStatus?: string; // e.g. "New Idea", "In Progress", "Maintenance"
     targetAudience?: string;
     keyFeatures?: string[];
     techStack?: string[];
-    mode?: GenerationMode; // draft = concise, polished = detailed
+    primaryMetric?: string;
+    outOfScope?: string;
+    integrationRequirements?: string;
+    knownConstraints?: string;
     includeDiagram?: boolean;
     budget?: string;
     timeline?: string;
@@ -121,12 +131,48 @@ export interface ProjectBriefOutput {
         description: string;
         diagramType: string;
     };
+
+    // === Research Document Fields (Optional) ===
+    abstract?: string;
+    researchQuestions?: string[] | { question: string; type?: string }[];
+    methodology?: {
+        approach: string;
+        population?: string;
+        dataCollection?: {
+            methods?: string[];
+            instruments?: string[];
+        };
+        dataAnalysis?: {
+            techniques?: string[];
+            tools?: string[];
+            software?: string | string[];
+        };
+    };
+    expectedOutcomes?: string[] | { outcome: string; indicator?: string }[];
+    timeline?: {
+        phases?: {
+            name?: string;
+            phase?: string;
+            duration?: string;
+            weeks?: string;
+            activities?: string[] | string;
+            description?: string;
+        }[];
+    };
+    variables?: {
+        name?: string;
+        variable?: string;
+        type?: string;
+        indicators?: string[] | string;
+    }[];
+    hypotheses?: string[] | { hypothesis?: string; statement?: string }[];
 }
 
 // Input for diagram generation
 export interface DiagramInput {
     projectName: string;
     projectDescription: string;
+    projectType?: ProjectType;
     techStack?: string[];
 }
 
@@ -155,6 +201,8 @@ export interface LLMResponse<T = any> {
     metadata?: {
         model: string;
         tokensUsed?: number;
+        inputTokens?: number;
+        outputTokens?: number;
         processingTime?: number;
         keyIndex?: number;
     };

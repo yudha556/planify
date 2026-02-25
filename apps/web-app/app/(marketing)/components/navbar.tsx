@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client"
 
 import { useState } from "react"
@@ -6,6 +7,12 @@ import { Button } from "@workspace/ui/components/button"
 import { Sheet, SheetContent, SheetTrigger } from "@workspace/ui/components/sheet"
 import { FileText, Menu } from "lucide-react"
 import Link from "next/link"
+=======
+import { Card } from "@workspace/ui/components/card";
+import { Button } from "@workspace/ui/components/button";
+import { Layers2 } from "lucide-react";
+import Link from "next/link";
+>>>>>>> 7db627bab45bb9e700308ff95574d2eb9fe8f628
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false)
@@ -21,7 +28,7 @@ export default function Navbar() {
             <Card className="w-full shadow-md rounded-none flex flex-row justify-between items-center px-4 md:px-14 py-4">
                 <div className="flex flex-row gap-4 items-center md:w-full">
                     <div className="w-10 h-10 items-center justify-center flex rounded-md bg-blue-600">
-                        <FileText className="text-white" />
+                        <Layers2 className="text-white" />
                     </div>
                     <h1 className="text-2xl font-bold">Planify</h1>
                 </div>

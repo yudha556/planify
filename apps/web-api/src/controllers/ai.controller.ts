@@ -20,11 +20,26 @@ export const aiController = {
     /**
      * Generate Project Brief
      * @route POST /api/ai/project-brief
+     * NOTE: Generation is FREE (preview). Coins only for export (PDF/Markdown).
      */
     generateProjectBrief: asyncHandler(
         async (req: Request, res: Response): Promise<any> => {
-            const { projectName, projectDescription, targetAudience, keyFeatures, techStack, mode, includeDiagram } =
-                req.body;
+            const {
+                projectName,
+                projectDescription,
+                projectType,
+                documentStyle,
+                outputLanguage,
+                projectStatus,
+                targetAudience,
+                keyFeatures,
+                techStack,
+                primaryMetric,
+                outOfScope,
+                integrationRequirements,
+                knownConstraints,
+                includeDiagram
+            } = req.body;
             const userId = (req as any).user?.userId || "anonymous";
 
             // Validate required fields
@@ -36,48 +51,34 @@ export const aiController = {
                 });
             }
 
-            // Check coins
-            // Draft: 2, Polished: 4, Diagram: 2
-            const briefCost = mode === "polished" ? COIN_COSTS.BRIEF_POLISHED : COIN_COSTS.BRIEF_DRAFT;
-            const diagramCost = includeDiagram ? COIN_COSTS.DIAGRAM : 0;
-            const totalCost = briefCost + diagramCost;
-
-            const hasEnough = await coinService.hasEnough(userId, totalCost);
-            if (!hasEnough) {
-                const balance = await coinService.getBalance(userId);
-                return res.status(402).json({
-                    success: false,
-                    message: `Insufficient coins. Need ${totalCost}, have ${balance}`,
-                    code: AI_ERROR_CODES.INSUFFICIENT_COINS,
-                    coins: balance,
-                });
-            }
-
             const input: ProjectBriefInput = {
                 projectName,
                 projectDescription,
+                projectType: projectType || "webapp",
+                documentStyle: documentStyle || "professional",
+                outputLanguage,
+                projectStatus,
                 targetAudience,
                 keyFeatures,
                 techStack,
-                mode: mode === "polished" ? "polished" : "draft",
+                primaryMetric,
+                outOfScope,
+                integrationRequirements,
+                knownConstraints,
             };
 
-            // 1. Generate Brief
+            // 1. Generate Brief (FREE - no coin deduction)
             const result = await aiService.generateProjectBrief(input);
             const briefData = result.data;
 
-            // 2. Generate Diagram (if requested)
+            // 2. Generate Diagram (if requested, also FREE)
             let diagramData = undefined;
             if (includeDiagram && briefData) {
-                // Use the structured output from the brief to inform the diagram generation if possible,
-                // or just stay consistent with inputs.
-                // Using input is faster/parallel, but using brief might be more consistent.
-                // Let's stick to using input for now to avoid complexity of "chained" prompts in a simple controller.
                 const diagramInput: DiagramInput = {
                     projectName,
                     projectDescription,
-                    techStack: briefData.recommendedTechStack.map(t => t.technology) // Use recommended tech if available? Or input?
-                    // Let's prefer the output tech stack as it's more refined.
+                    projectType: projectType || "webapp",
+                    techStack: briefData.recommendedTechStack?.map(t => t.technology) || techStack || []
                 };
 
                 const diagramResult = await aiService.generateDiagram(diagramInput);
@@ -87,9 +88,8 @@ export const aiController = {
                 }
             }
 
-            // Deduct coins on success
-            await coinService.deduct(userId, totalCost);
-            const newBalance = await coinService.getBalance(userId);
+            // Get coin balance for display (not deducting)
+            const coins = await coinService.getBalance(userId);
 
             return res.status(200).json({
                 success: true,
@@ -99,7 +99,7 @@ export const aiController = {
                     ...result.metadata,
                     diagramIncluded: !!diagramData
                 },
-                coins: newBalance,
+                coins: coins,
             });
         }
     ),

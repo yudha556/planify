@@ -389,12 +389,23 @@
                 <textarea id="p-desc" rows="4"
                     placeholder="Describe your idea... what does it do? who is it for?"></textarea>
 
+                <label>Project Type</label>
+                <select id="p-type" style="margin-bottom: 1rem;">
+                    <option value="webapp">🌐 Web Application</option>
+                    <option value="mobile">📱 Mobile App (iOS/Android)</option>
+                    <option value="research">📚 Research Document</option>
+                    <option value="enterprise">🏢 Enterprise System</option>
+                </select>
+
                 <div class="toggle-group">
-                    <div class="toggle-option active" onclick="setMode('draft')" id="opt-draft">
-                        Draft <span style="font-size:0.7em; opacity:0.7;">(2c)</span>
+                    <div class="toggle-option active" onclick="setMode('professional')" id="opt-professional">
+                        Professional <span style="font-size:0.7em; opacity:0.7;">(3c)</span>
                     </div>
-                    <div class="toggle-option" onclick="setMode('polished')" id="opt-polished">
-                        Polished <span style="font-size:0.7em; opacity:0.7;">(4c)</span>
+                    <div class="toggle-option" onclick="setMode('formal')" id="opt-formal">
+                        Formal <span style="font-size:0.7em; opacity:0.7;">(2c)</span>
+                    </div>
+                    <div class="toggle-option" onclick="setMode('concise')" id="opt-concise">
+                        Concise <span style="font-size:0.7em; opacity:0.7;">(1c)</span>
                     </div>
                 </div>
 
@@ -494,7 +505,7 @@
         const API = '/api';
         let token = localStorage.getItem('token');
         let currentBrief = null;
-        let mode = 'draft';
+        let mode = 'professional';
 
         // --- Init ---
         if (token) initAuth();
@@ -508,9 +519,20 @@
 
         function setMode(m) {
             mode = m;
-            document.getElementById('opt-draft').classList.toggle('active', m === 'draft');
-            document.getElementById('opt-polished').classList.toggle('active', m === 'polished');
+            document.getElementById('opt-professional').classList.toggle('active', m === 'professional');
+            document.getElementById('opt-formal').classList.toggle('active', m === 'formal');
+            document.getElementById('opt-concise').classList.toggle('active', m === 'concise');
+
+            const modeTag = document.getElementById('res-mode');
+            if (modeTag) {
+                modeTag.innerText = m.toUpperCase();
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set mode default
+            setMode('professional');
+        });
 
         // --- AUTH ---
         async function login() {
@@ -605,6 +627,7 @@
             const payload = {
                 projectName: document.getElementById('p-name').value,
                 projectDescription: document.getElementById('p-desc').value,
+                projectType: document.getElementById('p-type').value,
                 mode: mode,
                 includeDiagram: document.getElementById('inc-diagram').checked,
                 techStack: document.getElementById('p-tech').value.split(','),
@@ -627,7 +650,7 @@
                     currentBrief = data.data;
                     renderResult(data.data, data.metadata);
                     if (data.coins) document.getElementById('coin-val').innerText = data.coins;
-                    document.getElementById('gen-status').innerText = `Success! ${data.metadata.processingTime}ms | ${data.metadata.tokensUsed || '?'} tokens`;
+                    document.getElementById('gen-status').innerText = `Success! ${data.metadata.processingTime}ms | ${data.metadata.inputTokens || '?'} in + ${data.metadata.outputTokens || '?'} out = ${data.metadata.tokensUsed || '?'} tokens`;
                 } else {
                     alert(data.message);
                     document.getElementById('gen-status').innerText = `Error: ${data.message}`;
@@ -684,42 +707,119 @@
                 await sleep(300);
             };
 
-            // 1. Overview
-            await typeText(overviewEl, data.overview);
+            // 1. Overview (Research uses 'abstract' instead of 'overview')
+            const overviewText = data.overview || data.abstract || 'No overview available';
+            await typeText(overviewEl, overviewText);
             await sleep(400);
 
-            // 2. Objectives
-            // Reset content
+            // 2. Objectives (handle both string array and object array)
             objEl.innerHTML = '';
-            for (const obj of data.objectives) {
-                const li = document.createElement('li');
-                li.innerText = obj;
-                li.className = 'fade-in';
-                objEl.appendChild(li);
-                await sleep(200);
+            if (data.objectives && Array.isArray(data.objectives)) {
+                for (const obj of data.objectives) {
+                    const li = document.createElement('li');
+                    // Handle both string format and object format {id, objective, measurable}
+                    li.innerText = typeof obj === 'string' ? obj : (obj.objective || obj.id || JSON.stringify(obj));
+                    li.className = 'fade-in';
+                    objEl.appendChild(li);
+                    await sleep(200);
+                }
             }
 
-            // 3. Tech Stack
-            techEl.innerHTML = '';
-            for (const t of data.recommendedTechStack) {
-                const span = document.createElement('span');
-                span.className = 'tag tech fade-in';
-                span.title = t.reason;
-                span.innerText = t.technology;
-                techEl.appendChild(span);
-                await sleep(100);
+            // 3. Tech Stack (App-specific, skip for research)
+            if (data.platformCategory !== 'research' && data.recommendedTechStack) {
+                techEl.innerHTML = '';
+                for (const t of data.recommendedTechStack) {
+                    const span = document.createElement('span');
+                    span.className = 'tag tech fade-in';
+                    span.title = t.reason;
+                    span.innerText = t.technology;
+                    techEl.appendChild(span);
+                    await sleep(100);
+                }
+                await sleep(300);
+            } else {
+                // Hide tech section for research
+                techEl.parentNode.style.display = data.platformCategory === 'research' ? 'none' : '';
             }
-            await sleep(300);
 
-            // 4. Features (Staggered)
+            // 4. Features (App-specific) OR Research Questions (Research-specific)
             featEl.innerHTML = '';
-            if (data.keyFeatures) {
+
+            if (data.platformCategory === 'research') {
+                // === RESEARCH MODE ===
+                // Research Questions
+                if (data.researchQuestions) {
+                    const rqDiv = document.createElement('div');
+                    rqDiv.className = 'fade-in';
+                    rqDiv.style.marginBottom = '1.5rem';
+                    rqDiv.innerHTML = `
+                        <h4 style="color: #a78bfa;">Research Questions</h4>
+                        <ol style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
+                            ${Array.isArray(data.researchQuestions)
+                            ? data.researchQuestions.map(q => typeof q === 'string' ? `<li>${q}</li>` : `<li><strong>${q.id}:</strong> ${q.question}</li>`).join('')
+                            : ''}
+                        </ol>
+                    `;
+                    featEl.appendChild(rqDiv);
+                    await sleep(300);
+                }
+
+                // Methodology
+                if (data.methodology) {
+                    const methDiv = document.createElement('div');
+                    methDiv.className = 'fade-in';
+                    methDiv.style.marginBottom = '1.5rem';
+                    methDiv.innerHTML = `
+                        <h4 style="color: #22d3ee;">Methodology</h4>
+                        <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
+                            <li><strong>Approach:</strong> ${data.methodology.approach || 'N/A'}</li>
+                            ${data.methodology.population ? `<li><strong>Population:</strong> ${data.methodology.population}</li>` : ''}
+                            ${data.methodology.dataCollection?.methods?.length ? `<li><strong>Data Collection:</strong> ${data.methodology.dataCollection.methods.join(', ')}</li>` : ''}
+                            ${data.methodology.dataAnalysis?.techniques?.length ? `<li><strong>Analysis:</strong> ${data.methodology.dataAnalysis.techniques.join(', ')}</li>` : ''}
+                        </ul>
+                    `;
+                    featEl.appendChild(methDiv);
+                    await sleep(300);
+                }
+
+                // Expected Outcomes
+                if (data.expectedOutcomes) {
+                    const outDiv = document.createElement('div');
+                    outDiv.className = 'fade-in';
+                    outDiv.style.marginBottom = '1.5rem';
+                    outDiv.innerHTML = `
+                        <h4 style="color: #4ade80;">Expected Outcomes</h4>
+                        <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
+                            ${data.expectedOutcomes?.map(o => typeof o === 'string' ? `<li>${o}</li>` : `<li>${o.outcome} (${o.contribution})</li>`).join('') || '<li>N/A</li>'}
+                        </ul>
+                    `;
+                    featEl.appendChild(outDiv);
+                    await sleep(300);
+                }
+
+                // Timeline
+                if (data.timeline) {
+                    const tlDiv = document.createElement('div');
+                    tlDiv.className = 'fade-in';
+                    tlDiv.style.marginBottom = '1.5rem';
+                    tlDiv.innerHTML = `
+                        <h4 style="color: #fbbf24;">Timeline</h4>
+                        <p style="color: var(--text-muted); font-size: 0.95rem;">Duration: ${data.timeline.estimatedDuration || data.timeline.totalDuration || 'TBD'}</p>
+                        <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.9rem;">
+                            ${data.timeline.phases?.map(p => typeof p === 'string' ? `<li>${p}</li>` : `<li>${p.phase}: ${p.duration}</li>`).join('') || ''}
+                        </ul>
+                    `;
+                    featEl.appendChild(tlDiv);
+                    await sleep(300);
+                }
+            } else if (data.keyFeatures) {
+                // === APP MODE (Web/Mobile) ===
                 for (const f of data.keyFeatures) {
                     const div = document.createElement('div');
                     div.style.background = 'rgba(255,255,255,0.05)';
                     div.style.padding = '1rem';
                     div.style.borderRadius = '6px';
-                    div.className = 'fade-in'; // Animation class
+                    div.className = 'fade-in';
                     div.style.marginBottom = '1rem';
                     div.innerHTML = `
                         <div style="display:flex; justify-content:space-between; margin-bottom: 0.3rem;">
@@ -734,18 +834,20 @@
                 }
             }
 
-            // 5. Success Criteria (New)
-            const successDiv = document.createElement('div');
-            successDiv.className = 'fade-in';
-            successDiv.style.marginBottom = '1.5rem';
-            successDiv.innerHTML = `
-                <h4 style="color: #4ade80;">Success Criteria</h4>
-                <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
-                    ${data.successCriteria?.map(c => `<li><strong>${c.metric}:</strong> ${c.target}</li>`).join('') || '<li>N/A</li>'}
-                </ul>
-            `;
-            featEl.parentNode.insertBefore(successDiv, featEl);
-            await sleep(300);
+            // 5. Success Criteria (Only for App projects)
+            if (data.platformCategory !== 'research') {
+                const successDiv = document.createElement('div');
+                successDiv.className = 'fade-in';
+                successDiv.style.marginBottom = '1.5rem';
+                successDiv.innerHTML = `
+                    <h4 style="color: #4ade80;">Success Criteria</h4>
+                    <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
+                        ${data.successCriteria?.map(c => `<li><strong>${c.metric}:</strong> ${c.target}</li>`).join('') || '<li>N/A</li>'}
+                    </ul>
+                `;
+                featEl.parentNode.insertBefore(successDiv, featEl);
+                await sleep(300);
+            }
 
             // 6. User Flow (New)
             if (data.userFlow) {
@@ -769,11 +871,11 @@
                 srsDiv.style.marginTop = '1.5rem';
                 srsDiv.innerHTML = `
                     <h4 style="color: #f472b6;">SRS Modules</h4>
-                    ${data.srsModules.map(m => `
+                    ${data.srsModules?.map(m => `
                         <div style="margin-bottom: 1rem;">
                             <strong style="color: #e2e8f0; display:block; margin-bottom:0.3rem;">${m.moduleName}</strong>
                             <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.9rem;">
-                                ${m.requirements.map(r => `<li>[${r.id}] ${r.userStory}</li>`).join('')}
+                                ${m.requirements?.map(r => `<li>[${r.id}] ${r.userStory}</li>`).join('') || ''}
                             </ul>
                         </div>
                     `).join('')}
@@ -790,7 +892,7 @@
                 riskDiv.innerHTML = `
                     <h4 style="color: #ef4444;">Risks & Mitigation</h4>
                     <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.95rem;">
-                         ${data.risks.map(r => `<li><strong>${r.risk}</strong> (${r.type}): ${r.mitigation}</li>`).join('')}
+                         ${data.risks?.map(r => `<li><strong>${r.risk}</strong> (${r.type}): ${r.mitigation}</li>`).join('') || '<li>N/A</li>'}
                     </ul>
                 `;
                 featEl.parentNode.appendChild(riskDiv);
@@ -808,7 +910,7 @@
                 logDiv.innerHTML = `
                     <h4 style="color: #fbbf24; margin-bottom:0.5rem;">AI Clarification Log</h4>
                     <ul style="padding-left: 1.2rem; color: #94a3b8; font-size: 0.9rem;">
-                         ${data.clarificationLog.map(l => `<li><strong>${l.topic}:</strong> ${l.advice}</li>`).join('')}
+                         ${data.clarificationLog?.map(l => `<li><strong>${l.topic}:</strong> ${l.advice}</li>`).join('') || '<li>N/A</li>'}
                     </ul>
                 `;
                 featEl.parentNode.appendChild(logDiv);

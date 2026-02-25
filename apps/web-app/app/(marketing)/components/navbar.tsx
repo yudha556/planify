@@ -1,7 +1,18 @@
+<<<<<<< HEAD
+"use client"
+
+import { useState } from "react"
+import { Card } from "@workspace/ui/components/card"
+import { Button } from "@workspace/ui/components/button"
+import { Sheet, SheetContent, SheetTrigger } from "@workspace/ui/components/sheet"
+import { FileText, Menu } from "lucide-react"
+import Link from "next/link"
+=======
 import { Card } from "@workspace/ui/components/card";
 import { Button } from "@workspace/ui/components/button";
 import { FileText } from "lucide-react";
 import Link from "next/link";
+>>>>>>> 7db627bab45bb9e700308ff95574d2eb9fe8f628
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false)

@@ -6,6 +6,9 @@ import authRoute from "./routes/auth.route";
 import aiRoute from "./routes/ai.route";
 import pdfRoute from "./routes/pdf.route";
 import markdownRoute from "./routes/markdown.route";
+import projectsRoute from "./routes/projects.route";
+import historyRoute from "./routes/history.route";
+import userRoute from "./routes/user.route";
 import { errorHandler } from "./middlewares/error.middleware";
 
 const app: Express = express();
@@ -32,6 +35,9 @@ app.use("/api/auth", authRoute);
 app.use("/api/ai", aiRoute);
 app.use("/api/pdf", pdfRoute);
 app.use("/api/markdown", markdownRoute);
+app.use("/api/projects", projectsRoute);
+app.use("/api/history", historyRoute);
+app.use("/api/user", userRoute);
 
 // Error handler (must be last)
 app.use(errorHandler);

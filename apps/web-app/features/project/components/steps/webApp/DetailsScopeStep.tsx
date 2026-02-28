@@ -23,7 +23,7 @@ interface Props {
 export function DetailsScopeStep({ setStep, formData, updateField, canProceedToReview, onGenerate, isGenerating, generateError }: Props) {
 
   const handleContinueToReview = async () => {
-    await onGenerate(formData)
+    await onGenerate(formData, true)
     setStep(4)
   }
 

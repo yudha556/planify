@@ -14,7 +14,7 @@ export function StepSidebar({ type, step }: Props) {
     },
   ]
 
-  const steps = type ? projectFlows[type] : baseStep
+  const steps = type ? (projectFlows[type] || projectFlows.web_app) : baseStep
 
   return (
     <div className="h-full flex flex-col shadow-md ">
@@ -28,10 +28,9 @@ export function StepSidebar({ type, step }: Props) {
             <div key={index} className="flex items-start gap-4">
               <div
                 className={`min-w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold
-                  ${
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : isCompleted
+                  ${isActive
+                    ? "bg-blue-600 text-white"
+                    : isCompleted
                       ? "bg-green-500 text-white"
                       : "border border-gray-300 text-gray-500"
                   }
@@ -42,9 +41,8 @@ export function StepSidebar({ type, step }: Props) {
 
               <div>
                 <div
-                  className={`font-medium ${
-                    isActive ? "text-blue-600" : "text-gray-800"
-                  }`}
+                  className={`font-medium ${isActive ? "text-blue-600" : "text-gray-800"
+                    }`}
                 >
                   {item.title}
                 </div>

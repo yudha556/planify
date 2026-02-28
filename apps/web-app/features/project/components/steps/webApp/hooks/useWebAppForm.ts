@@ -49,6 +49,7 @@ export function useWebAppForm() {
     return {
         formData,
         updateField,
+        setFormData,
         resetForm,
         canProceedToDetails,
         canProceedToReview,

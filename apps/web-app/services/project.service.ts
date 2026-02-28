@@ -39,7 +39,23 @@ export async function regenerateSection(input: {
  * GET /ai/coins
  */
 export async function getCoins() {
-    return apiClient<{ coins: number }>("/ai/coins")
+    return apiClient<{
+        credits: number
+    }>("/ai/coins")
+}
+
+/**
+ * Get current user profile
+ * GET /user/me
+ */
+export async function getUser() {
+    return apiClient<{
+        id: string
+        email: string
+        fullname: string | null
+        credits: number
+        created_at: string
+    }>("/user/me")
 }
 
 /**

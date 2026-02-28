@@ -174,7 +174,7 @@ export const aiController = {
         const coins = await coinService.getBalance(userId);
         return res.status(200).json({
             success: true,
-            coins: coins,
+            data: { credits: coins },
         });
     }),
 

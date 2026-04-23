@@ -4,7 +4,7 @@ let token = localStorage.getItem('token');
 let currentBrief = null;
 let mode = 'professional';
 
-// --- Init ---
+// --- Init --- 
 if (token) initAuth();
 
 function switchAuthMode(m) {

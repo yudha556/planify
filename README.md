@@ -87,3 +87,7 @@ Planify terbuka untuk kontribusi. Untuk menambahkan fitur baru atau memperbaiki 
 5. Buat Pull Request
 
 ![alt text](<ChatGPT Image 4 Feb 2026, 01.04.59.png>)
+
+# Lisensi
+
+[MIT](LICENSE)

@@ -1,10 +1,14 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import type { tokenBlacklist as TokenBlacklist } from "../src/utils/token-blacklist";
 
-// Paksa jalur in-memory: string kosong tetap kosong walau dotenv
-// me-load ulang REDIS_URL dari file .env lokal saat import
-process.env.REDIS_URL = "";
+let tokenBlacklist: typeof TokenBlacklist;
 
-const { tokenBlacklist } = await import("../src/utils/token-blacklist");
+beforeAll(async () => {
+  // Paksa jalur in-memory: string kosong tetap kosong walau dotenv
+  // me-load ulang REDIS_URL dari file .env lokal saat import
+  process.env.REDIS_URL = "";
+  ({ tokenBlacklist } = await import("../src/utils/token-blacklist"));
+});
 
 describe("tokenBlacklist (in-memory fallback)", () => {
   beforeEach(async () => {

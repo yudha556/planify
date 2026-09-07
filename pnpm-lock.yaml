@@ -206,6 +206,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.1.18
         version: 4.1.18
+      '@types/mermaid':
+        specifier: ^9.2.0
+        version: 9.2.0
       '@types/node':
         specifier: ^25.1.0
         version: 25.2.0
@@ -2003,6 +2006,10 @@ packages:
 
   '@types/jsonwebtoken@9.0.10':
     resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
+
+  '@types/mermaid@9.2.0':
+    resolution: {integrity: sha512-AlvLWYer6u4BkO4QzMkHo0t9RkvVIgqggVZmO+5snUiuX2caTKqtdqygX6GeE1VQa/TnXw9WoH0spcmHtG0inQ==}
+    deprecated: This is a stub types definition. mermaid provides its own type definitions, so you do not need this installed.
 
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
@@ -7162,6 +7169,10 @@ snapshots:
     dependencies:
       '@types/ms': 2.1.0
       '@types/node': 25.2.0
+
+  '@types/mermaid@9.2.0':
+    dependencies:
+      mermaid: 11.12.3
 
   '@types/mime@1.3.5': {}
 

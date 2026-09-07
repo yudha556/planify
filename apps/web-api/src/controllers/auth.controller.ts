@@ -96,7 +96,7 @@ export const authController = {
     const token = authHeader?.split(" ")[1];
 
     if (token) {
-      tokenBlacklist.add(token);
+      await tokenBlacklist.add(token);
     }
 
     return res.status(200).json({

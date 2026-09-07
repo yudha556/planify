@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError, ErrorCodes } from "../utils/app-error";
+import { logger } from "../utils/logger";
 
 interface ErrorResponse {
   success: boolean;
@@ -10,10 +11,12 @@ interface ErrorResponse {
 
 export function errorHandler(
   err: any,
-  _: Request,
+  req: Request,
   res: Response,
-  __: NextFunction
+  _next: NextFunction
 ): void {
+  const reqId = (req as any).reqId || "unknown";
+
   // Handle AppError instances
   if (err instanceof AppError) {
     const response: ErrorResponse = {
@@ -23,8 +26,22 @@ export function errorHandler(
       error: process.env.NODE_ENV === "development" ? err.stack : undefined,
     };
 
-    console.error(`[ERROR] [${err.code}]`, err.message);
+    logger.warn({ reqId, code: err.code, message: err.message, status: err.statusCode }, "AppError");
     res.status(err.statusCode).json(response);
+    return;
+  }
+
+  // Handle Zod validation errors
+  if (err.name === "ZodError") {
+    const response: ErrorResponse = {
+      success: false,
+      message: "Validation failed",
+      code: ErrorCodes.VALIDATION_ERROR,
+      error: process.env.NODE_ENV === "development" ? JSON.stringify(err.errors) : undefined,
+    };
+
+    logger.warn({ reqId, errors: err.errors }, "Zod Validation Error");
+    res.status(400).json(response);
     return;
   }
 
@@ -33,12 +50,7 @@ export function errorHandler(
   const message = err.message || "Internal Server Error";
   const code = err.code || ErrorCodes.INTERNAL_ERROR;
 
-  console.error("[ERROR]", {
-    code,
-    status,
-    message,
-    stack: err.stack,
-  });
+  logger.error({ reqId, code, status, message, stack: err.stack }, "Internal Error");
 
   const response: ErrorResponse = {
     success: false,

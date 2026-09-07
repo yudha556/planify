@@ -2,6 +2,9 @@ import { type Router as ExpressRouter } from "express";
 import { Router } from "express";
 import { aiController } from "../controllers/ai.controller";
 import { authenticate } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validation.middleware";
+import { generateProjectBriefSchema, generateDiagramSchema } from "../validators/ai.validator";
+import { aiLimiter } from "../middlewares/rate-limit";
 
 const router: ExpressRouter = Router();
 
@@ -31,7 +34,7 @@ router.get("/status", aiController.getStatus);
  * REQUIRES: Authorization header dengan Bearer token
  * Deducts coins: draft=1, polished=3
  */
-router.post("/project-brief", authenticate, aiController.generateProjectBrief);
+router.post("/project-brief", authenticate, aiLimiter, validate(generateProjectBriefSchema), aiController.generateProjectBrief);
 
 /**
  * POST /api/ai/diagram
@@ -39,7 +42,7 @@ router.post("/project-brief", authenticate, aiController.generateProjectBrief);
  * REQUIRES: Authorization header dengan Bearer token
  * Deducts coins: 2
  */
-router.post("/diagram", authenticate, aiController.generateDiagram);
+router.post("/diagram", authenticate, aiLimiter, validate(generateDiagramSchema), aiController.generateDiagram);
 
 /**
  * GET /api/ai/coins

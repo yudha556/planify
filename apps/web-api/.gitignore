@@ -39,3 +39,6 @@ prisma/dev.db-journal
 
 # Misc
 .turbo/
+
+# Local Agent Docs
+.agents/

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorCodes } from "../utils/app-error";
 import { tokenBlacklist } from "../utils/token-blacklist";
-
 import { supabase } from "../config/supabase";
 
 export const authenticate = async (
@@ -30,7 +29,8 @@ export const authenticate = async (
     }
 
     // Check if token is blacklisted (logged out)
-    if (tokenBlacklist.isBlacklisted(token)) {
+    const isBlacklisted = await tokenBlacklist.isBlacklisted(token);
+    if (isBlacklisted) {
         return res.status(401).json({
             success: false,
             message: "Token has been revoked",

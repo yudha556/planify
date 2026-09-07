@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
@@ -27,6 +27,7 @@ import {
 } from "@workspace/ui/components/popover";
 import { ScrollArea } from "@workspace/ui/components/scroll-area";
 import Link from "next/link";
+import { getCoins } from "@/services/project.service";
 
 const notifications = [
   {
@@ -64,6 +65,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const segments = pathname.split("/").filter((item) => item !== "");
 
   const isNewProject = pathname.includes("/newProject");
+
+  const [coinBalance, setCoinBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    getCoins()
+      .then((res) => {
+        if (res.success && res.data) {
+          setCoinBalance(res.data.credits);
+        }
+      })
+      .catch(() => setCoinBalance(0));
+  }, []);
 
   const formatLabel = (text: string) => {
     return text
@@ -127,7 +140,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   className="px-4 flex flex-row gap-2 items-center cursor-pointer hover:shadow-md hover:translate-y-1"
                 >
                   <Coins color="blue" className="size-5" />
-                  <p className="text-sm text-blue-500">35 Coins</p>
+                  <p className="text-sm text-blue-500">{coinBalance !== null ? `${coinBalance} Coins` : "..."}</p>
                 </Button>
               </Link>
 
@@ -167,11 +180,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       {notifications.map((notif) => (
                         <div
                           key={notif.id}
-                          className={`flex flex-col items-start gap-1 p-4 text-sm hover:bg-muted/50 cursor-pointer transition-colors border-b last:border-0 ${
-                            !notif.read
-                              ? "bg-blue-50/50 dark:bg-blue-900/10"
-                              : ""
-                          }`}
+                          className={`flex flex-col items-start gap-1 p-4 text-sm hover:bg-muted/50 cursor-pointer transition-colors border-b last:border-0 ${!notif.read
+                            ? "bg-blue-50/50 dark:bg-blue-900/10"
+                            : ""
+                            }`}
                         >
                           <div className="flex w-full justify-between gap-2">
                             <span className="font-semibold text-foreground">
@@ -208,11 +220,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </header>
 
           <main
-            className={`bg-accent/20 ${
-              isNewProject
-                ? "flex-1 overflow-hidden"
-                : "flex flex-1 flex-col px-6 py-8"
-            }`}
+            className={`bg-accent/20 ${isNewProject
+              ? "flex-1 overflow-hidden"
+              : "flex flex-1 flex-col px-6 py-8"
+              }`}
           >
             {children}
           </main>

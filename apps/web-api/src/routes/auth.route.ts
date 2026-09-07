@@ -1,8 +1,9 @@
 import { type Router as ExpressRouter } from "express";
 import { Router } from "express";
 import { authController } from "../controllers/auth.controller";
-
 import { authenticate } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validation.middleware";
+import { registerSchema, loginSchema } from "../validators/auth.validator";
 
 const router: ExpressRouter = Router();
 
@@ -29,7 +30,7 @@ const router: ExpressRouter = Router();
  *   - AUTH_MISSING_FIELDS: email/password tidak diisi
  *   - AUTH_EMAIL_EXISTS: email sudah terdaftar
  */
-router.post("/register", authController.register);
+router.post("/register", validate(registerSchema), authController.register);
 
 /**
  * POST /api/auth/login
@@ -46,7 +47,7 @@ router.post("/register", authController.register);
  *   - AUTH_MISSING_FIELDS: email/password tidak diisi
  *   - AUTH_INVALID_CREDENTIALS: email/password salah
  */
-router.post("/login", authController.login);
+router.post("/login", validate(loginSchema), authController.login);
 
 /**
  * GET /api/auth/me

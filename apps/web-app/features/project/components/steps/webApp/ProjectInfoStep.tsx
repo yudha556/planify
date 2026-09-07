@@ -34,7 +34,7 @@ export function ProjectInfoStep({ setStep, formData, updateField, canProceedToDe
     description: string;
   }[] = [
       {
-        value: "profesional",
+        value: "professional",
         title: "Professional",
         description: "Standar business tone, balanced detail.",
       },
@@ -128,7 +128,7 @@ export function ProjectInfoStep({ setStep, formData, updateField, canProceedToDe
 
       <div className="flex flex-row justify-between items-center">
         <Button
-          onClick={() => setStep(2)}
+          onClick={() => setStep(1)}
           variant={"outline"}
           className="flex flex-row gap-4 items-center text-sm px-5 py-5 hover:translate-y-1 hover:shadow-md cursor-pointer "
         >Cancel</Button>

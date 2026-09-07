@@ -10,6 +10,7 @@ import { asyncHandler } from "../utils/async-handler";
 import { pdfService } from "../services/pdf/pdf.service";
 import { ProjectBriefOutput } from "../services/ai/types";
 import { coinService, COIN_COSTS } from "../services/coin";
+import { historyService } from "../services/history/history.service";
 import { ErrorCodes } from "../utils/app-error";
 
 /**
@@ -487,6 +488,16 @@ export const pdfController = {
 
             // Deduct coins
             await coinService.deduct(userId, cost);
+
+            // Log activity (non-blocking)
+            historyService.logActivity({
+                userId,
+                action: "export_pdf",
+                coinsUsed: cost,
+                metadata: {
+                    projectTitle: brief.title,
+                },
+            });
 
             // Send response
             res.setHeader("Content-Type", "application/pdf");

@@ -9,6 +9,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/async-handler";
 import { aiService, ProjectBriefInput, DiagramInput } from "../services/ai";
 import { coinService, COIN_COSTS } from "../services/coin";
+import { historyService } from "../services/history/history.service";
 import { ErrorCodes } from "../utils/app-error";
 
 // AI-specific error codes
@@ -91,6 +92,19 @@ export const aiController = {
             // Get coin balance for display (not deducting)
             const coins = await coinService.getBalance(userId);
 
+            // Log activity (non-blocking)
+            historyService.logActivity({
+                userId,
+                action: "generate_brief",
+                coinsUsed: 0,
+                metadata: {
+                    projectTitle: briefData?.title || projectName,
+                    projectType: projectType || "webapp",
+                    documentStyle: documentStyle || "professional",
+                    diagramIncluded: !!diagramData,
+                },
+            });
+
             return res.status(200).json({
                 success: true,
                 message: "Project brief generated successfully",
@@ -160,7 +174,7 @@ export const aiController = {
         const coins = await coinService.getBalance(userId);
         return res.status(200).json({
             success: true,
-            coins: coins,
+            data: { credits: coins },
         });
     }),
 

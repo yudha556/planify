@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import {
   AudioWaveform,
@@ -24,13 +25,9 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
+import { getUser } from "@/services/project.service"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
       name: "Planify Inc",
@@ -87,30 +84,46 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
+  const [user, setUser] = useState({ name: "", email: "", avatar: "" })
+
+  useEffect(() => {
+    getUser()
+      .then((res) => {
+        if (res.success && res.data) {
+          setUser({
+            name: res.data.fullname || res.data.email?.split("@")[0] || "User",
+            email: res.data.email || "",
+            avatar: "",
+          })
+        }
+      })
+      .catch(() => { })
+  }, [])
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain 
-          label="Main" 
+        <NavMain
+          label="Main"
           items={data.navMain.map((item) => ({
             ...item,
-            isActive: pathname === item.url, 
-          }))} 
+            isActive: pathname === item.url,
+          }))}
         />
-        
-        <NavMain 
-          label="Settings" 
+
+        <NavMain
+          label="Settings"
           items={data.navSettings.map((item) => ({
             ...item,
             isActive: pathname === item.url,
-          }))} 
+          }))}
         />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
